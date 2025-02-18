@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Drag and Drop</title>
+    <style>
+        .column {
+            float: left;
+            width: 12.5%; /* Adjusted width to fit 8 columns */
+            padding: 10px;
+            border: 1px solid #ccc;
+            min-height: 200px;
+        }
+
+        .draggable {
+            padding: 10px;
+            margin: 10px;
+            background-color: #f0f0f0;
+            border: 1px solid #ccc;
+            cursor: move;
+        }
+    </style>
+</head>
+<body>
+
+<div class="column" id="1"></div>
+<div class="column" id="2"></div>
+<div class="column" id="3"></div>
+<div class="column" id="4"></div>
+<div class="column" id="5"></div>
+<div class="column" id="6"></div>
+<div class="column" id="7"></div>
+<div class="column" id="8"></div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', () => {
+        fetchTickets();
+
+        function fetchTickets() {
+            fetch('update_status.php')
+                .then(response => response.json())
+                .then(tickets => {
+                    const columns = {
+                        1: document.getElementById('1'),
+                        2: document.getElementById('2'),
+                        3: document.getElementById('3'),
+                        4: document.getElementById('4'),
+                        5: document.getElementById('5'),
+                        6: document.getElementById('6'),
+                        7: document.getElementById('7'),
+                        8: document.getElementById('8')
+                    };
+
+                    tickets.forEach(ticket => {
+                        const ticketElement = document.createElement('div');
+                        ticketElement.className = 'draggable';
+                        ticketElement.draggable = true;
+                        ticketElement.dataset.id = ticket.id;
+                        ticketElement.textContent = ticket.nature_of_call;
+
+                        if (columns[ticket.status]) {
+                            columns[ticket.status].appendChild(ticketElement);
+                        } else {
+                            columns[1].appendChild(ticketElement); // Default to column 1 if status is not valid
+                        }
+                    });
+
+                    initializeDragAndDrop();
+                })
+                .catch(error => console.error('Error fetching tickets:', error));
+        }
+
+        function initializeDragAndDrop() {
+            const draggables = document.querySelectorAll('.draggable');
+            const columns = document.querySelectorAll('.column');
+
+            draggables.forEach(draggable => {
+                draggable.addEventListener('dragstart', () => {
+                    draggable.classList.add('dragging');
+                });
+
+                draggable.addEventListener('dragend', () => {
+                    draggable.classList.remove('dragging');
+                });
+            });
+
+            columns.forEach(column => {
+                column.addEventListener('dragover', e => {
+                    e.preventDefault();
+                    const afterElement = getDragAfterElement(column, e.clientY);
+                    const draggable = document.querySelector('.dragging');
+                    if (afterElement == null) {
+                        column.appendChild(draggable);
+                    } else {
+                        column.insertBefore(draggable, afterElement);
+                    }
+                });
+
+                column.addEventListener('drop', e => {
+                    e.preventDefault();
+                    const draggable = document.querySelector('.dragging');
+                    const newColumnId = column.id;
+                    const itemId = draggable.getAttribute('data-id');
+
+                    console.log(`Ticket ID: ${itemId}, New Status: ${newColumnId}`);
+
+                    // Update status in the database
+                    updateStatus(itemId, newColumnId);
+                });
+            });
+        }
+
+        function getDragAfterElement(container, y) {
+            const draggableElements = [...container.querySelectorAll('.draggable:not(.dragging)')];
+
+            return draggableElements.reduce((closest, child) => {
+                const box = child.getBoundingClientRect();
+                const offset = y - box.top - box.height / 2;
+                if (offset < 0 && offset > closest.offset) {
+                    return { offset: offset, element: child };
+                } else {
+                    return closest;
+                }
+            }, { offset: Number.NEGATIVE_INFINITY }).element;
+        }
+
+        function updateStatus(itemId, newColumnId) {
+            const xhr = new XMLHttpRequest();
+            xhr.open('POST', 'update_status.php', true);
+            xhr.setRequestHeader('Content-Type', 'application/x-www-form-urlencoded');
+
+            const params = new URLSearchParams();
+            params.append('id', itemId);
+            params.append('status', newColumnId);
+
+            xhr.onload = function () {
+                if (xhr.status === 200) {
+                    console.log(`Status updated successfully for Ticket ID: ${itemId} to Status: ${newColumnId}`);
+                } else {
+                    console.error('Failed to update status');
+                }
+            };
+            xhr.send(params.toString());
+        }
+    });
+</script>
+
+</body>
+</html>

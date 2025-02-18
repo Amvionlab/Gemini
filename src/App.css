@@ -1,0 +1,49 @@
+/* .selectbox:focus{
+  box-shadow: 0 0 10px rgb(95, 221, 51);
+} */
+
+#app {
+  width: 100%;
+  height: 100%;
+  margin: 0 auto;
+  padding: 2rem;
+  /* background: url("../src/image/Login.jpg") no-repeat; */
+  background-size: cover;
+  overflow: hidden;
+
+  font-family: "Poppins", sans-serif;
+}
+
+.App {
+  display: flex;
+  
+  flex-direction: column;
+  height: 100vh; /* Adjust as needed */
+}
+
+.main-content {
+  display: flex;
+  flex: 1;
+  /* Adjust styles as needed for spacing, alignment, etc. */
+}
+/* Custom Scrollbar Styles */
+.ticket-scroll {
+  scrollbar-width: none; /* Firefox */
+}
+
+.ticket-scroll::-webkit-scrollbar {
+  width: 6px; /* Width of the scrollbar */
+}
+
+.ticket-scroll::-webkit-scrollbar-track {
+  background: #f1f1f1; /* Background of the scrollbar track */
+}
+
+.ticket-scroll::-webkit-scrollbar-thumb {
+  background: #888; /* Color of the scrollbar thumb */
+  border-radius: 10px; /* Rounded corners */
+}
+
+.ticket-scroll::-webkit-scrollbar-thumb:hover {
+  background: #555555; /* Color when hovered */
+}

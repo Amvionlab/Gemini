@@ -1,0 +1,125 @@
+ 
+@import url('https://fonts.googleapis.com/css2?family=Poppins:ital,wght@0,100;0,200;0,300;0,400;0,500;0,600;0,700;0,800;0,900;1,100;1,200;1,300;1,400;1,500;1,600;1,700;1,800;1,900&display=swap');
+
+
+.whole-login {
+    position: relative;
+    top: 50%;
+    left: 32%;
+   
+}
+#forgot{
+    position: relative;
+    left: 190px;
+    color: #2066f3 ;
+}
+.form-background{
+  background-color: #0042ff14;
+  padding: 40px 40px 25px 40px;
+   width: 36%;
+   
+    border-radius: 25px;
+    box-shadow: rgba(0, 255, 255, 0.678) 0px 50px 100px -20px, rgba(17, 210, 213, 0.5) 0px 30px 60px -20px;
+}
+.input-login {
+    padding: 10px 10px 10px 40px; /* Add padding to the left for the icon */
+    width: 100%;
+    border-radius: 5px;
+    background-color: #ffffff1a;
+    color: white;
+    border: 1px solid #424743;
+    box-sizing: border-box;
+    transition: 1s ease;
+    box-shadow: 0 0 5px rgb(0, 254, 242); 
+}
+
+.input-login:focus {
+    outline: none;  /* Remove the default outline */
+    box-shadow: 0 0 10px rgb(0, 254, 242);  /* Custom box shadow */
+}
+
+input[type=submit] {
+    width: 40%;
+    transition: .5s ease;
+    background-color: #0048ff63;
+    padding: 8px;
+    border-radius: 5px;
+    cursor: pointer;
+}
+
+
+.input-container {
+    position: relative;
+    width: 100%;
+    margin-bottom: 10px;
+}
+input:placeholder {
+    color: red;
+    
+  }
+
+.input-icon {
+    position: absolute;
+    left: 10px;
+    top: 56%;
+    transform: translateY(-50%);
+    width: 16px; 
+    height: 16px; 
+    pointer-events: none; 
+}
+
+
+.footer > h6{
+    position: fixed;
+    bottom: 0;
+    left: 35%;
+
+}
+.submit:hover{
+    box-shadow: rgb(0, 254, 242) 0px 4px 4px,  rgb(0, 254, 242) 0px -4px 7px,  rgb(0, 254, 242) 0px 2px 3px,  rgb(0, 254, 242) 0px 4px 5px,  rgb(0, 254, 242) 0px -3px 5px;
+    color: white;
+   transition: .5s;
+   width: 70%;
+   
+}
+@media only screen and (max-width: 768px){
+    .whole-login{
+        position: relative;
+        left: 11%;
+    }
+    .form-background{
+         width: 80%;
+      }
+      #forgot{
+        position: relative;
+        left: 250px;
+      }
+      .main-heading{
+        font-size: 25px;
+      }
+}
+@media only screen and (max-width: 600px){
+.sampat-logo{
+    width: 30px;
+    height: 35px;
+}
+.main-heading{
+    font-size: 15px;
+}
+#forgot{
+    position: relative;
+    left: 140px;
+}
+    .whole-login {
+        position: relative;
+        top: 50%;
+        left: 0%;
+       
+    }
+    .form-background{
+        
+        padding: 28px;
+         width: 100%;
+          border-radius: 15px;
+      }
+}

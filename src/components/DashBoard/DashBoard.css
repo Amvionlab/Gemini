@@ -1,0 +1,107 @@
+
+
+
+.draggable {
+  max-width: 100%; 
+  overflow: hidden;
+}
+
+.flex > div {
+  max-width: calc(100% - 50px); 
+  min-height: 95%;
+}
+
+.flex > div p {
+  white-space: nowrap; 
+  overflow: hidden; 
+  text-overflow: ellipsis; 
+}
+
+.bg-box {
+  flex-shrink: 0;
+}
+
+
+
+
+.header-right {
+  flex: 1;
+  text-align: right;
+  padding: 20px; /* Adjust as needed */
+}
+
+
+.column {
+  flex: 0 0 auto;
+  width: 19%;
+  margin: 0 10px;
+  padding: 10px;
+  max-height: 95%;
+  min-height: 95%;
+  display: flex;
+  flex-direction: column;
+  border-radius: 4px;
+  overflow-y: auto; /* Enable vertical scrolling for each column */
+}
+
+.draggable {
+  background-color: #ebeef5;
+  color: black;
+  padding: 5px;
+  margin: 0px 0 ;
+  border-radius: 4px;
+  cursor: move;
+  font-size: 0.65rem;
+  
+ 
+}
+.draggable p{
+  margin-left: 5px;
+  
+  
+}
+.float-left {
+  float: left;
+}
+
+.float-right {
+  float: right;
+}
+
+.date-container {
+  padding: 0 20px;
+  margin-top: 10px;
+}
+
+.date {
+  font-size: 1.2rem;
+  color: #666;
+}
+
+.clearfix {
+  clear: both;
+}
+/* DashBoard.css */
+.truncated-text {
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  max-width: 150px; /* Adjust the width as needed */
+  display: inline-block;
+  vertical-align: top;
+  position: relative;
+}
+
+.truncated-text:hover::after {
+  content: attr(data-full-text);
+  white-space: normal;
+  max-width: none;
+  background-color: #fff;
+  position: absolute;
+  left: 0;
+  top: 100%;
+  z-index: 10;
+  padding: 5px;
+  border: 1px solid #ccc;
+  box-shadow: 0 0 10px rgba(0, 0, 0, 0.1);
+}

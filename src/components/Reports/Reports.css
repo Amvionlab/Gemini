@@ -1,0 +1,46 @@
+.pagination-container {
+  display: flex;
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.pagination-page {
+  margin: 0 5px;
+}
+
+.pagination-link {
+  display: block;
+  padding: 8px 16px;
+  text-decoration: none;
+  border: 1px solid #ddd;
+  color: #333;
+  border-radius: 4px;
+}
+
+.pagination-previous,
+.pagination-next {
+  padding: 8px 16px;
+  border: 1px solid #ddd;
+  border-radius: 2px;
+  color: #333;
+}
+
+.pagination-break {
+  padding: 8px 16px;
+  color: #333;
+}
+
+.pagination-active .pagination-link {
+  background-color: #007bff;
+  color: white;
+  border-color: #007bff;
+}
+
+
+   .ticket-table th, .ticket-table td {
+    padding: 10px;
+     text-align: center;
+     border-bottom: 1px solid rgb(199, 197, 197);
+     font-weight: 400;
+  }

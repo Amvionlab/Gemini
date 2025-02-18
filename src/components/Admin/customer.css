@@ -1,0 +1,12 @@
+.transition-height {
+  transition: height 0.5s ease-in-out;
+  overflow: hidden;
+}
+
+.h-0 {
+  height: 0;
+}
+
+.h-full {
+  height: auto; /* or a specific height if you know it */
+}
