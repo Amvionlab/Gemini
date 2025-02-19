@@ -34,6 +34,7 @@ function Reports() {
   const [toDate, setToDate] = useState("");
 
   const csvData = Array.isArray(filteredTickets) ? filteredTickets.map((ticket) => ({
+    
     Id: ticket.id,
     Type: ticket.type,
     SLA: ticket.sla,
@@ -49,15 +50,22 @@ function Reports() {
     "Closed At": ticket.closed_date,
 })) : [];
 
-  const headers = [
-    "Id",
-    "Type",
-    "Status",
-    "Customer",
-    "Assignees",
-    "Domain",
-    "Post Date",
-  ];
+
+const headers = [
+  { label: "Id", key: "id" },
+  { label: "Type", key: "type" },
+  { label: "SLA Priority", key: "sla_priority" },
+  { label: "Status", key: "status" },
+  { label: "Ticket Service", key: "ticket_service" },
+  { label: "Customer Department", key: "customer_department" },
+  { label: "Customer", key: "customer" },
+  { label: "Assignees", key: "assignees" },
+  { label: "Domain", key: "domain" },
+  { label: "SubDomain", key: "subdomain" },
+  { label: "Created By", key: "created_b   y" },
+  { label: "Created At", key: "post_date" },
+];
+
 
   useEffect(() => {
     const fetchTickets = async (value) => {
@@ -206,7 +214,7 @@ const stableSort = (array, comparator) => {
     // Filter by selected labels
     const filteredByLabels = tickets.filter((ticket) =>
       selectedLabels.every((labels, index) => {
-        const field = ["type", "status", "customer", "assignees", "domain"][
+        const field = ["type","SLA", "status", "customer", "assignees", "domain"][
           index
         ];
         return labels.length === 0 || labels.includes(ticket[field] || "");
@@ -256,6 +264,8 @@ const stableSort = (array, comparator) => {
                       {
                         [
                           " type",
+                          "SLA",
+                         
                           " status",
                           " customer",
                           " assignees",
@@ -341,7 +351,7 @@ const stableSort = (array, comparator) => {
       <div className="main flex h-[90%] gap-0.5">
         <div className="section1 md:flex-col  w-[40%] bg-box rounded-md h-full">
           <div className="flex justify-center items-center gap-5 w-full p-2">
-            {["Type", "Status", "Customer", "Assignees", "Domain"].map(
+            {["Type","Status", "Customer", "Assignees", "Domain"].map(
               (item, index) => (
                 <div
                   key={index}
@@ -428,119 +438,97 @@ const stableSort = (array, comparator) => {
             </div>
             <TableContainer sx={{ maxHeight: "calc(100vh - 200px)" }}>
               <Table stickyHeader>
-                <TableHead>
-                  <TableRow>
-                    {headers.map((header, index) => (
-                      <TableCell
-                        key={index}
-                        align="left"
-                        sx={{
-                          whiteSpace: "nowrap",
-                          fontWeight: "300",
-                          fontSize: "14px",
-                          padding: "1px 3px",
-                          backgroundColor: "#004080",
-                          color: "white",
-                        }}
-                      >
-                        <TableSortLabel
-                          active={
-                            orderBy === header.toLowerCase().replace(" ", "_")
-                          }
-                          direction={
-                            orderBy === header.toLowerCase().replace(" ", "_")
-                              ? order
-                              : "asc"
-                          }
-                          onClick={() =>
-                            handleRequestSort(
-                              header.toLowerCase().replace(" ", "_")
-                            )
-                          }
-                          sx={{
-                            "&.Mui-active": { color: "white" },
-                            "&:hover": { color: "white" },
-                            "& .MuiTableSortLabel-icon": {
-                              color: "white !important",
-                            },
-                          }}
-                        >
-                          {header}
-                        </TableSortLabel>
-                      </TableCell>
-                    ))}
-                  </TableRow>
-                </TableHead>
-                <TableBody className="py-10">
-                  {sortedTickets.length === 0 ? (
-                    <TableRow hover>
-                      <TableCell
-                        colSpan={5}
-                        sx={{
-                          padding: "1px 3px",
-                          fontSize: "10px",
-                          textAlign: "center",
-                        }}
-                      >
-                        No tickets available
-                      </TableCell>
-                    </TableRow>
-                  ) : (
-                    sortedTickets
-                      .slice(
-                        page * ticketsPerPage,
-                        page * ticketsPerPage + ticketsPerPage
-                      )
-                      .map((ticket) => (
-                        <TableRow key={ticket.id} hover>
-                          {headers.map((header, idx) => (
-                            <TableCell
-                              key={idx}
-                              align="left"
-                              sx={{
-                                padding: "1px 3px",
-                                fontSize: "11px",
-                                whiteSpace: "nowrap",
-                                overflow: "hidden",
-                                textOverflow: "ellipsis",
-                                cursor: "pointer",
-                                "&:hover": {
-                                  whiteSpace: "normal",
-                                  backgroundColor: "#f5f5f5",
-                                },
-                              }}
-                              title={
-                                ticket[
-                                  header.toLowerCase().replace(" ", "_")
-                                ] ||
-                                (header === "Assignees" && "N/A")
-                              }
-                            >
-                              {header === "Assignees"
-                                ? (ticket.assignees
-                                    ?.split(" ")
-                                    .slice(0, 3)
-                                    .join(" ") || "N/A") +
-                                  (ticket.assignees?.split(" ").length > 3
-                                    ? "..."
-                                    : "")
-                                : header === "Customer" // Check for "Customer"
-                                ? (ticket.customer
-                                    ?.split(" ")
-                                    .slice(0, 3)
-                                    .join(" ") || "N/A") +
-                                  (ticket.customer?.split(" ").length > 3
-                                    ? "..."
-                                    : "")
-                                : ticket[
-                                    header.toLowerCase().replace(" ", "_")
-                                  ]}
-                            </TableCell>
-                          ))}
-                        </TableRow>
-                      ))
-                  )}
-                </TableBody>
+              <TableHead>
+  <TableRow>
+    {headers.map(({ label, key }, index) => (
+      <TableCell
+        key={index}
+        align="left"
+        sx={{
+          whiteSpace: "nowrap",
+          fontWeight: "300",
+          fontSize: "14px",
+          padding: "1px 3px",
+          backgroundColor: "#004080",
+          color: "white",
+        }}
+      >
+        <TableSortLabel
+          active={orderBy === key}
+          direction={orderBy === key ? order : "asc"}
+          onClick={() => handleRequestSort(key)}
+          sx={{
+            "&.Mui-active": { color: "white" },
+            "&:hover": { color: "white" },
+            "& .MuiTableSortLabel-icon": {
+              color: "white !important",
+            },
+          }}
+        >
+          {label}
+        </TableSortLabel>
+      </TableCell>
+    ))}
+  </TableRow>
+</TableHead>
+
+<TableBody className="py-10">
+  {sortedTickets.length === 0 ? (
+    <TableRow hover>
+      <TableCell
+        colSpan={headers.length}
+        sx={{
+          padding: "1px 3px",
+          fontSize: "10px",
+          textAlign: "center",
+        }}
+      >
+        No tickets available
+      </TableCell>
+    </TableRow>
+  ) : (
+    sortedTickets
+      .slice(page * ticketsPerPage, page * ticketsPerPage + ticketsPerPage)
+      .map((ticket) => (
+        <TableRow key={ticket.id} hover>
+          {headers.map(({ key, label }, idx) => {
+            const value = ticket[key]; // Fetching data dynamically
+
+            return (
+              <TableCell
+                key={idx}
+                align="center"
+                sx={{
+                  padding: "1px 3px",
+                  fontSize: "11px",
+                  whiteSpace: "nowrap",
+                  overflow: "hidden",
+                  textOverflow: "ellipsis",
+                  cursor: "pointer",
+                  "&:hover": {
+                    whiteSpace: "normal",
+                    backgroundColor: "#f5f5f5",
+                    
+                  },
+                }}
+                title={value || "N/A"} // Tooltip to show full text
+              >
+                {label === "Assignees"
+                  ? (value?.split(" ").slice(0, 3).join(" ") || "N/A") +
+                    (value?.split(" ").length > 3 ? "..." : "")
+                  : label === "Customer"
+                  ? (value?.split(" ").slice(0, 3).join(" ") || "N/A") +
+                    (value?.split(" ").length > 3 ? "..." : "")
+                  : value || "N/A"} {/* If value is empty, show "N/A" */}
+              </TableCell>
+            );
+          })}
+        </TableRow>
+      ))
+  )}
+</TableBody>
+
+
               </Table>
             </TableContainer>
           </Paper>

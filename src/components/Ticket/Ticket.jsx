@@ -17,6 +17,7 @@ const Form = () => {
     contact_mail: "",
     nature_of_call: "",
     ticket_type: "",
+    ticket_date: "",
     ticket_service: "",
     department: "",
     domain: "",
@@ -116,6 +117,7 @@ const Form = () => {
     (sla) => sla.customer_id === formData.customer_name
   );
   console.log(filteredSla);
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     document.body.classList.add('cursor-wait', 'pointer-events-none');
@@ -134,6 +136,7 @@ const Form = () => {
         body: form,
       });
       const result = await response.json();
+      console.log(result)
       if (!response.ok) {
         throw new Error(result.message || "Something went wrong");
       }
@@ -363,7 +366,7 @@ const Form = () => {
           ))}
         </select>
       </div>
-            <div className="flex items-center mb-3 mr-4">
+            <div className="flex items-center mr-4">
               <label className="text-sm font-semibold text-prime mr-2 w-32">
                 Email
               </label>
@@ -376,18 +379,32 @@ const Form = () => {
                 className="flex-grow text-xs bg-box border p-1.5 px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo max-w-72"
               />
             </div>
-
-            <div className="flex items-center mb-3 mr-4">
-              <label className="text-sm font-semibold text-prime mr-2 w-32">
+            <div className="w-full md:w-full flex gap-2">
+                <label className="block font-semibold text-prime mt-1 font-mont text-sm w-32">
+                  Ticket Date<span className="text-red-600 text-md font-bold ml-1">*</span>
+                </label>
+                <input
+                  type="datetime-local"
+                  name="ticket_date"
+                  value={formData.ticket_date}
+                  onChange={handleChange}
+                  className="w-72 text-xs h-7 bg-box border p-1  rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
+                  required
+                />
+              </div>
+            <div className="flex items-center mr-4">
+              <label className="text-sm font-semibold text-prime mr-2 w-32" hidden>
                 SLA Level 
               </label>
               <select
+              hidden
                 name="sla_priority"
                 value={formData.sla_priority}
                 onChange={handleChange}
                 //disabled={filteredSla.length === 0}
                 required={filteredSla.length > 0}
                 className="flex-grow text-xs bg-box border p-1.5  rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo max-w-72"
+
               >
               <option value="" className="custom-option">
                   Select SLA
@@ -405,9 +422,9 @@ const Form = () => {
             </div>
           </div>
           <div className="grid grid-cols-1 md:grid-cols-1 ml-2 pr-2 sm:ml-20 sm:pr-20">
-            <div className="-mb-3 mr-4 md:mr-0 md:w-full flex justify-center items-center">
-              <div className="w-full md:w-full">
-                <label className="block font-semibold text-prime mb-2 font-mont text-lg">
+            <div className=" mr-4 md:mr-0 md:w-full flex justify-center items-center">
+              <div className="w-full md:w-full mt-4 ">
+                <label className="block font-semibold text-prime mb-2 font-mont text-xl ">
                   Description of Issue
                 </label>
                 <textarea
@@ -415,9 +432,12 @@ const Form = () => {
                   placeholder="Enter Detail..."
                   value={formData.issue_nature}
                   onChange={handleChange}
-                  className="w-full text-base h-16 bg-box border p-1.5  rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
+                  className="w-10/12 text-sm h-16 bg-box border p-1.5 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
                 ></textarea>
               </div>
+             
+
+          
             </div>
 
             <div className="ml-4 mt-5 mb-1 md:ml-0 md:w-full flex justify-center items-center">
