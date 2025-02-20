@@ -106,9 +106,9 @@ const updateVendorInDB = async (ticketId, vendorIds) => {
     const data = await response.json();
     if (!response.ok) throw new Error(data.message || "Failed to update vendor");
 
-    console.log(`✅ Vendors updated successfully for Ticket ID ${ticketId}`);
+    console.log(`Vendors updated successfully for Ticket ID ${ticketId}`);
   } catch (error) {
-    console.error("❌ Error updating vendors:", error);
+    console.error("Error updating vendors:", error);
   }
 };
 
@@ -1213,6 +1213,7 @@ useEffect(() => {
               </div>
             ) : null}
 
+{user && user.assign === "1" && selectedOptions ? (
 <div className="flex-col w-full lg:w-1/5 pr-4 pl-2 pt-2 mr-2">
   {/* Header with Icon */}
   <div className="flex items-center gap-2 mb-4">
@@ -1300,7 +1301,9 @@ useEffect(() => {
     </div>
   )}
 </div>
+    ) : null}
           </div>
+          
         </div>
         {addEntry && (
           <div className="fixed w-[100%] h-[100%] bg-black/70 top-0 left-0 z-10 items-center justify-center">
