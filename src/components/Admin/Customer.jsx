@@ -44,6 +44,7 @@ const Form = () => {
   const [submissionStatus, setSubmissionStatus] = useState(null);
   const [attachmentError, setAttachmentError] = useState("");
   const [filters, setFilters] = useState({});
+  const [clientList, setClientList] = useState([]);
   const [showFilter, setShowFilter] = useState({
     id: false,
     name: false,
@@ -69,14 +70,31 @@ const Form = () => {
     fetchData();
   }, []);
 
+  useEffect(() => {
+    const fetchData = async () => {
+      try {
+        const response = await fetch(`${baseURL}/backend/client.php`);
+        const data = await response.json();
+        setClientList(data);
+        
+      } catch (error) {
+        console.error("Error fetching data:", error);
+      }
+    };
+
+    fetchData();
+  }, []);
+
   const navigate = useNavigate();
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value,
+      [name]: value, // Now storing ID instead of name
     });
   };
+  
+  
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -111,34 +129,44 @@ const Form = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+  
     const form = new FormData();
-    for (const key in formData) {
+  
+    // Append all form data fields
+    Object.keys(formData).forEach((key) => {
       form.append(key, formData[key]);
-    }
+    });
+  
+    // Append file attachment if present
     if (attachment) {
       form.append("attachment", attachment);
     }
-
+  
     try {
       const response = await fetch(`${baseURL}/backend/customer_add.php`, {
         method: "POST",
         body: form,
       });
+  
       const result = await response.json();
+      console.log("Response Status:", response.status);
+      console.log("Response Body:", result);
+  
       if (!response.ok) {
         throw new Error(result.message || "Something went wrong");
       }
+  
       setSubmissionStatus({ success: true, message: result.message });
-      toast.success("Customer added");
+      toast.success("Customer added successfully!");
       location.reload();
     } catch (error) {
+      console.error("Submission Error:", error);
       setSubmissionStatus({
         success: false,
-        message:
-          "There was a problem with your fetch operation: " + error.message,
+        message: "Error during submission: " + error.message,
       });
     }
-  };
+  };  
 
   const handleFilterChange = (e, field, type) => {
     const value = e.target.value.toLowerCase(); // convert filter value to lowercase
@@ -309,91 +337,63 @@ const Form = () => {
             </div>
 
             {/* Additional Fields */}
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-10 ml-10 pr-10 mb-0">
-              <div className="flex items-center mb-2 mr-4">
-                <label className="text-sm font-semibold text-prime mr-2 w-32">
-                  Name
-                </label>
-                <input
-                  type="text"
-                  name="name"
-                  placeholder="Enter Name"
-                  value={formData.name}
-                  onChange={handleChange}
-                  required
-                  className="flex-grow text-xs bg-box border p-2  rounded-md outline-none transition ease-in-out delay-150 focus:shadow-prime focus:shadow-sm"
-                />
-              </div>
-              <div className="flex items-center mb-2 mr-4">
-                <label className="text-sm font-semibold text-prime mr-2 w-32">
-                  Location
-                </label>
-                <input
-                  type="text"
-                  name="location"
-                  placeholder="Enter Location"
-                  value={formData.location}
-                  onChange={handleChange}
-                  required
-                  className="flex-grow text-xs bg-box border p-2  rounded-md outline-none transition ease-in-out delay-150 focus:shadow-prime focus:shadow-sm"
-                />
-              </div>
-              <div className="flex items-center mb-2 mr-4">
-                <label className="text-sm font-semibold text-prime mr-2 w-32">
-                  Mobile
-                </label>
-                <input
-                  type="tel"
-                  name="mobile"
-                  placeholder="Enter Mobile"
-                  value={formData.mobile}
-                  onChange={handleChange}
-                  required
-                  className="flex-grow text-xs bg-box border p-2  rounded-md outline-none transition ease-in-out delay-150 focus:shadow-prime focus:shadow-sm"
-                />
-              </div>
-              <div className="flex items-center mb-2 mr-4">
-                <label className="text-sm font-semibold text-prime mr-2 w-32">
-                  Email
-                </label>
-                <input
-                  type="email"
-                  name="email"
-                  placeholder="Enter Email"
-                  value={formData.email}
-                  onChange={handleChange}
-                  required
-                  className="flex-grow text-xs bg-box border p-2  rounded-md outline-none transition ease-in-out delay-150 focus:shadow-prime focus:shadow-sm"
-                />
-              </div>
-              <div className="flex items-center mb-2 mr-4">
-                <label className="text-sm font-semibold text-prime mr-2 w-32">
-                  Department
-                </label>
-                <input
-                  type="text"
-                  name="department"
-                  placeholder="Enter Department"
-                  value={formData.department}
-                  onChange={handleChange}
-                  required
-                  className="flex-grow text-xs bg-box border p-2  rounded-md outline-none transition ease-in-out delay-150 focus:shadow-prime focus:shadow-sm"
-                />
-              </div>
-              <div className="flex items-center mb-2 mr-4">
-                <label className="text-sm font-semibold text-prime mr-2 w-32">
-                  Contact Person
-                </label>
-                <input
-                  type="text"
-                  name="contact_person"
-                  placeholder="Enter Contact Person"
-                  value={formData.contact_person}
-                  onChange={handleChange}
-                  required
-                  className="flex-grow text-xs bg-box border p-2  rounded-md outline-none transition ease-in-out delay-150 focus:shadow-prime focus:shadow-sm"
-                />
-              </div>
+            <div className="grid grid-cols-1 md:grid-cols-4 gap-x-10 ml-10 pr-10 mb-0">
+            <div className="mb-2 mr-4 mt-3">
+      <label className="text-sm font-semibold text-prime w-44">
+        Name
+      </label>
+      <select
+  name="name"
+  value={formData.name}
+  onChange={handleChange}
+  required
+  className="w-60 mt-2 flex-grow text-xs bg-box border p-2 rounded-md outline-none transition ease-in-out delay-150 focus:shadow-prime focus:shadow-sm"
+>
+  <option value="">Select Name</option>
+  {clientList.map((client, index) => (
+    <option key={index} value={client.id}>
+      {client.name}
+    </option>
+  ))}
+</select>
+
+    </div>
+    {[
+  { label: "GCL UNIQUE CODE", type: "text", name: "gclunicode" },
+  { label: "GCL REGION", type: "text", name: "gclreg" },
+  { label: "BRANCH CODE", type: "text", name: "branchcode" },
+  { label: "A END", type: "text", name: "a_end" },
+  { label: "B END", type: "text", name: "b_end" },
+  { label: "NODE", type: "text", name: "node" },
+  { label: "MODEM TYPE", type: "text", name: "modem_type" },
+  { label: "ROUTER IP", type: "text", name: "router_ip" },
+  { label: "PRIMARY LINK", type: "text", name: "primary_link" },
+  { label: "WAN IP", type: "text", name: "wan_ip" },
+  { label: "CIRCUIT ID", type: "text", name: "circuit_id" },
+  { label: "BAND WIDTH", type: "text", name: "band_width" },
+  { label: "LOCATION TYPE", type: "text", name: "location_type" },
+  { label: "ADDRESS", type: "text", name: "address" },
+  { label: "CONTACT NUMBER", type: "tel", name: "contact_num" },
+  { label: "MOBILE NUMBER", type: "tel", name: "mob_num" },
+  { label: "COMMISSIONED DATE", type: "type", name: "commi_date" },
+  { label: "STATE/CITY", type: "text", name: "state_city" },
+  { label: "E MAIL ID", type: "email", name: "email" },
+  { label: "SLA", type: "text", name: "sla" },
+  { label: "SERVICE PROVIDER", type: "text", name: "service_provider" },
+].map(({ label, type, name }, index) => (
+  <div key={index} className="flex flex-col mt-4">
+    <label className="font-semibold text-sm mb-1">{label}</label>
+    <input
+      type={type}
+      name={name}
+      value={formData[name] || ""}
+      onChange={handleChange}
+      className="border rounded p-2"
+      placeholder={`Enter ${label}`}
+    />
+  </div>
+))}
+
             </div>
             <div className="grid grid-cols-1 md:grid-cols-1 ml-20 pr-20">
               <div className="ml-4 mt-1 md:ml-0 md:w-full flex justify-center items-center">
@@ -513,45 +513,62 @@ const Form = () => {
             </span>
 
 
-          </div>
+          </div >
 
 
-          <Table>
-            <TableHead >
-              <TableRow>
-                {[
-                  "Id",
-                  "Name",
-                  "Location",
-                  "Mobile",
-                  "Email",
-                  "Department",
-                  "Contact_person",
-                ].map((header, index) => (
-                  <TableCell key={index} >
-                    <div style={{ display: "flex", alignItems: "center", gap: "5px", fontWeight: "bold", fontSize: "1.1rem" }} >
-                      {header}
+          <div className="overflow-auto max-h-[500px]">
+  <Table className="min-w-full">
+    {/* Sticky Header */}
+    <TableHead className="sticky top-0 bg-white z-10 shadow-md">
+      <TableRow>
+        {[
+          "ID",
+          "NAME",
+          "GCL UNIQUE CODE",
+          "GCL REGION",
+          "BRANCH CODE",
+          "A END",
+          "B END",
+          "NODE",
+          "MODEM TYPE",
+          "ROUTER IP",
+          "PRIMARY LINK",
+          "WAN IP",
+          "CIRCUIT ID",
+          "BAND WIDTH",
+          "LOCATION TYPE",
+          "ADDRESS",
+          "CONTACT NUMBER",
+          "MOBILE NUMBER",
+          "COMMISSIONED DATE",
+          "STATE/CITY",
+          "E MAIL ID",
+          "SLA",
+          "SERVICE PROVIDER",
+        ].map((header, index) => (
+          <TableCell key={index} className="whitespace-nowrap p-2">
+            <div style={{ fontWeight: "bold", fontSize: "0.8rem" }}>{header}</div>
+          </TableCell>
+        ))}
+      </TableRow>
+    </TableHead>
 
-                    </div>
-
-                  </TableCell>
-                ))}
-              </TableRow>
-            </TableHead>
-            <TableBody>
-              {currentTickets.map((user, i) => (
-                <TableRow key={user.id} hover>
-                  <TableCell style={{ padding: '10px' }} className="border-t">{i + 1}</TableCell>
-                  <TableCell style={{ padding: '10px' }} className="border-t">{user.name}</TableCell>
-                  <TableCell style={{ padding: '10px' }} className="border-t">{user.location}</TableCell>
-                  <TableCell style={{ padding: '10px' }} className="border-t">{user.mobile}</TableCell>
-                  <TableCell style={{ padding: '10px' }} className="border-t">{user.email}</TableCell>
-                  <TableCell style={{ padding: '10px' }} className="border-t">{user.department}</TableCell>
-                  <TableCell style={{ padding: '10px' }} className="border-t">{user.contact_person}</TableCell>
-                </TableRow>
-              ))}
-            </TableBody>
-          </Table>
+    {/* Scrollable Body */}
+    <TableBody>
+      {currentTickets.map((user, i) => (
+        <TableRow key={user.id} hover>
+          <TableCell className="border-t p-2">{i + 1}</TableCell>
+          <TableCell className="border-t p-2">{user.name}</TableCell>
+          <TableCell className="border-t p-2">{user.location}</TableCell>
+          <TableCell className="border-t p-2">{user.mobile}</TableCell>
+          <TableCell className="border-t p-2">{user.email}</TableCell>
+          <TableCell className="border-t p-2">{user.department}</TableCell>
+          <TableCell className="border-t p-2">{user.contact_person}</TableCell>
+        </TableRow>
+      ))}
+    </TableBody>
+  </Table>
+</div>
 
         </div>
         {/* Pagination Controls */}

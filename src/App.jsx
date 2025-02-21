@@ -17,6 +17,7 @@ import Header from "./components/Header/Header";
 import Ticket from "./components/Ticket/Ticket";
 import User from "./components/Admin/User";
 import Department from "./components/Admin/Department";
+import Client from "./components/Admin/Client";
 import Customer from "./components/Admin/Customer";
 import Employee from "./components/Admin/Employee";
 import Vendor from "./components/Admin/Vendor";
@@ -142,6 +143,7 @@ function App() {
                     <>
                       <Route path="/setup" element={<Setup />} />
                       <Route path="/admin/user" element={<User />} />
+                      <Route path="/admin/client" element={<Client />} />
                       <Route path="/admin/customer" element={<Customer />} />
                       <Route path="/admin/employee" element={<Employee />} />
                       <Route path="/admin/vendor" element={<Vendor />} />

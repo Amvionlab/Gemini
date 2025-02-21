@@ -74,7 +74,7 @@ if ($resultEmployees->num_rows > 0) {
 
 
 // Fetch customers
-$sqlCustomers = "SELECT id, name, location, department, contact_person, mobile, email FROM customer";
+$sqlCustomers = "SELECT id, cid, gcl_unique_code, gcl_region, contact_person, mobile, email FROM customer";
 $resultCustomers = $conn->query($sqlCustomers);
 
 $customers = array();
@@ -83,9 +83,9 @@ if ($resultCustomers->num_rows > 0) {
   while ($row = $resultCustomers->fetch_assoc()) {
     $customers[] = array(
       "id" => $row["id"],
-      "name" => $row["name"],
-      "location" => $row["location"],
-      "department" => $row["department"],
+      "cid" => $row["cid"],
+      "gcl_unique_code" => $row["gcl_unique_code"],
+      "gcl_region" => $row["gcl_region"],
       "contact_person" => $row["contact_person"],
       "mobile" => $row["mobile"],
       "email" => $row["email"]
@@ -104,6 +104,20 @@ if ($resultDepartments->num_rows > 0) {
     $departments[] = array("id" => $row["id"], "name" => $row["name"]);
   }
 }
+
+
+// Fetch cliets
+$sqlClients = "SELECT id, name FROM client";
+$resultClients = $conn->query($sqlClients);
+
+$clients = array();
+
+if ($resultClients->num_rows > 0) {
+  while ($row = $resultClients->fetch_assoc()) {
+    $clients[] = array("id" => $row["id"], "name" => $row["name"]);
+  }
+}
+
 
 // Fetch domains
 $sqlDomains = "SELECT id, name FROM domain";
@@ -171,6 +185,7 @@ $response = array(
   "ticketServices" => $ticketServices,
   "customers" => $customers,
   "departments" => $departments,
+  "clients" => $clients,
   "domains" => $domains,
   "subDomains" => $subDomains,
   "locations" => $locations,

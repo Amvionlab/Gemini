@@ -32,6 +32,7 @@ const Form = () => {
   const [ticketsla, setTicketsla] = useState([]);
   const [ticketServices, setTicketServices] = useState([]);
   const [customers, setCustomers] = useState([]);
+  const [clients, setClients] = useState([]);
   const [departments, setDepartments] = useState([]);
   const [domains, setDomains] = useState([]);
   const [subDomains, setSubDomains] = useState([]);
@@ -50,6 +51,7 @@ const Form = () => {
         );
         const data = await response.json();
         setTicketTypes(data.ticketTypes);
+        setClients(data.clients);
         setTicketnoc(data.ticketnoc);
         setTicketsla(data.ticketsla);
         setCustomers(data.customers);
@@ -58,6 +60,7 @@ const Form = () => {
         setSubDomains(data.subDomains);
         setLocations(data.locations);
         setTicketServices(data.ticketServices);
+
       } catch (error) {
         console.error("Error fetching data:", error);
       }
@@ -71,28 +74,38 @@ const Form = () => {
   const handleChange = (e) => {
     const { name, value } = e.target;
 
-    if (name === 'customer_name') {
-      const selectedCustomer = customers.find(customer => customer.id === value);
-
-      setFormData({
-        ...formData,
-        [name]: value,
-        customer_location: selectedCustomer ? selectedCustomer.location : "",
-        customer_department: selectedCustomer ? selectedCustomer.department : "",
-        contact_person: selectedCustomer ? selectedCustomer.contact_person : "",
-        contact_number: selectedCustomer ? selectedCustomer.mobile : "",
-        contact_mail: selectedCustomer ? selectedCustomer.email : "",
-      });
-    } 
+  
     
-    else {
-      setFormData({
-        ...formData,
-        [name]: value
-      });
-    }
-  };
-
+      if (name === "customer_name") {
+        setFormData({
+          ...formData,
+          [name]: value,
+          customer_location: "",
+          customer_department: "",
+          contact_person: "",
+          contact_number: "",
+          contact_mail: "",
+        });
+      } 
+      else if (name === "customer_location") {
+        const selectedCustomer = customers.find(customer => customer.id === value);
+    
+        setFormData({
+          ...formData,
+          [name]: value,
+          customer_department: selectedCustomer ? selectedCustomer.gcl_unique_code : "",
+          contact_person: selectedCustomer ? selectedCustomer.contact_person : "",
+          contact_number: selectedCustomer ? selectedCustomer.mobile : "",
+          contact_mail: selectedCustomer ? selectedCustomer.email : "",
+        });
+      } 
+      else {
+        setFormData({
+          ...formData,
+          [name]: value,
+        });
+      }
+    };  
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -111,6 +124,10 @@ const Form = () => {
   };
   const filteredSubDomains = subDomains.filter(
     (subDomain) => subDomain.domain_id === formData.domain
+  );
+
+  const filteredCustomer = customers.filter(
+    (customer) => customer.cid === formData.customer_name
   );
   console.log(ticketsla);
   const filteredSla = ticketsla.filter(
@@ -178,7 +195,7 @@ const Form = () => {
                 <option value="" className="custom-option">
                   Select Customer
                 </option>
-                {customers.map((customer) => (
+                {clients.map((customer) => (
                   <option
                     key={customer.id}
                     value={customer.id}
@@ -219,14 +236,34 @@ const Form = () => {
               <label className="text-sm font-semibold text-prime mr-2 w-32">
                 Location
               </label>
-              <input
+              {/* <input
                 type="text"
                 name="customer_location"
                 placeholder="Enter location"
                 value={formData.customer_location}
                 onChange={handleChange}
                 className="flex-grow text-xs bg-box border p-1.5 px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo max-w-72"
-              />
+              /> */}
+               <select
+                name="customer_location"
+                value={formData.customer_location}
+                onChange={handleChange}
+                required
+                className="flex-grow text-xs bg-box border p-1.5  rounded outline-none focus:border-flo focus:ring-flo min-w-72 max-w-72"
+              >
+                <option value="" className="custom-option">
+                  Select Region
+                </option>
+                {filteredCustomer.map((customer) => (
+                  <option
+                    key={customer.id}
+                    value={customer.id}
+                    className="custom-option"
+                  >
+                    {customer.gcl_region} - {customer.gcl_unique_code}
+                  </option>
+                ))}
+              </select>
              
             </div>
             <div className="flex items-center mb-3 mr-4">
@@ -254,12 +291,12 @@ const Form = () => {
             
             <div className="flex items-center mb-3 mr-4">
               <label className="text-sm font-semibold text-prime mr-2 w-32">
-                Department
+                Unique_Code:
               </label>
               <input
                 type="text"
                 name="customer_department"
-                placeholder="Enter department"
+                placeholder="Enter Unique Code"
                 value={formData.customer_department}
                 onChange={handleChange}
                 className="flex-grow text-xs bg-box border p-1.5  px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo max-w-72"
