@@ -35,7 +35,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $sql = "INSERT INTO domain (name ,is_active) VALUES ('$domainname', '1')"; 
 
     if ($conn->query($sql) === TRUE) {
-        $response = array('success' => true, 'message' => 'Domain added successfully.');
+        $response = array('success' => true, 'message' => 'Rca added successfully.');
         echo json_encode($response);
     } else {
         $response = array('success' => false, 'message' => 'Error: ' . $sql . '<br>' . $conn->error);

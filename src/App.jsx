@@ -24,6 +24,7 @@ import Vendor from "./components/Admin/Vendor";
 import Domain from "./components/Admin/Domain";
 import SubDomain from "./components/Admin/SubDomain";
 import Location from "./components/Admin/Location";
+import RCA from "./components/Admin/RCA";
 import Sla from "./components/Admin/Sla";
 import Ticket_noc from "./components/Admin/Ticket_noc";
 import Access from "./components/Admin/Access";
@@ -154,6 +155,7 @@ function App() {
                       />
                       <Route path="/admin/sla" element={<Sla />} />
                       <Route path="/admin/domain" element={<Domain />} />
+                      <Route path="/admin/rca" element={<RCA />} />
                       <Route path="/admin/location" element={<Location />} />
                       <Route
                         path="/admin/ticket_status"

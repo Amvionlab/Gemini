@@ -35,6 +35,7 @@ function Setup() {
       { title: "Sub Domain", icon: <FontAwesomeIcon icon={faSitemap} />, path: "/admin/subdomain" },
       { title: "Branch", icon: <FontAwesomeIcon icon={faMapMarkedAlt} />, path: "/admin/location" },
       { title: "SLA", icon: <FontAwesomeIcon icon={faFlag} />, path: "/admin/sla" },
+      { title: "RCA", icon: <FontAwesomeIcon icon={faGlobe} />, path: "/admin/rca" },
     ],
     TICKET: [
 
