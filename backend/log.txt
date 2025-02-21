@@ -1,0 +1,5 @@
+2025-02-21 07:02:18 - Script started
+2025-02-21 07:02:19 - Preparing SQL statement
+2025-02-21 07:02:19 - Ticket inserted successfully, ID: 1161
+2025-02-21 07:02:26 - Log inserted successfully
+2025-02-21 07:02:26 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
