@@ -19,7 +19,7 @@ $sqlTickets = "SELECT
             ticket_noc.name AS nature_of_call,
             ticket_service.name AS service,
             domain.name AS domain,
-            customer.name AS customer,
+            client.name AS customer,
             location.name AS location,
             sla.level AS sla,
             CONCAT(creator.firstname, ' ', creator.lastname) AS name,
@@ -49,7 +49,7 @@ $sqlTickets = "SELECT
         LEFT JOIN 
             domain ON ticket.domain = domain.id
         LEFT JOIN 
-            customer ON ticket.customer_name = customer.id
+        client ON ticket.customer_name = client.id
         LEFT JOIN 
             location ON ticket.customer_location = location.id
         LEFT JOIN 
