@@ -320,7 +320,7 @@ const Form = () => {
               setShowDropdown(true);
             }}
             onFocus={() => setShowDropdown(true)}
-            className="w-full text-xs bg-box border p-1.5 px-2 w-72 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
+            className="text-xs bg-box border p-1.5 px-2 w-72 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
           />
 
           {showDropdown && filteredCustomers.length > 0 && (
