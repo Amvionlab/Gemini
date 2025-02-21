@@ -55,20 +55,23 @@ const Form = () => {
 
   const [showForm, setShowForm] = useState(false);
 
+  const fetchData = async () => {
+    try {
+      const response = await fetch(`${baseURL}/backend/fetchCustomers.php`);
+      const data = await response.json();
+      console.log("Fetched Data:", data); // Debugging
+      setUsers(data);
+      setFilteredUsers(data);
+    } catch (error) {
+      console.error("Error fetching data:", error);
+    }
+  };
+  
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const response = await fetch(`${baseURL}/backend/fetchCustomers.php`);
-        const data = await response.json();
-        setUsers(data);
-        setFilteredUsers(data);
-      } catch (error) {
-        console.error("Error fetching data:", error);
-      }
-    };
-
-    fetchData();
+    fetchData(); // Call fetchData when component loads
   }, []);
+  
+  
 
   useEffect(() => {
     const fetchData = async () => {
@@ -90,9 +93,11 @@ const Form = () => {
     const { name, value } = e.target;
     setFormData({
       ...formData,
-      [name]: value, // Now storing ID instead of name
+      [name]: name === "client_id" ? Number(value) : value, // Convert to integer
     });
   };
+  
+  
   
   
 
@@ -132,12 +137,10 @@ const Form = () => {
   
     const form = new FormData();
   
-    // Append all form data fields
     Object.keys(formData).forEach((key) => {
       form.append(key, formData[key]);
     });
   
-    // Append file attachment if present
     if (attachment) {
       form.append("attachment", attachment);
     }
@@ -158,7 +161,36 @@ const Form = () => {
   
       setSubmissionStatus({ success: true, message: result.message });
       toast.success("Customer added successfully!");
-      location.reload();
+  
+      // ✅ Reset form fields
+      setFormData({
+        name: "",
+        gclunicode: "",
+        gclreg: "",
+        branchcode: "",
+        a_end: "",
+        b_end: "",
+        node: "",
+        modem_type: "",
+        router_ip: "",
+        primary_link: "",
+        wan_ip: "",
+        circuit_id: "",
+        band_width: "",
+        location_type: "",
+        address: "",
+        contact_num: "",
+        mob_num: "",
+        commi_date: "",
+        state_city: "",
+        email: "",
+        sla: "",
+        service_provider: "",
+      });
+  
+fetchData(); // Fetch updated data
+
+      setAttachment(null); // Reset file attachment if any
     } catch (error) {
       console.error("Submission Error:", error);
       setSubmissionStatus({
@@ -166,7 +198,8 @@ const Form = () => {
         message: "Error during submission: " + error.message,
       });
     }
-  };  
+  };
+  
 
   const handleFilterChange = (e, field, type) => {
     const value = e.target.value.toLowerCase(); // convert filter value to lowercase
@@ -343,19 +376,21 @@ const Form = () => {
         Name
       </label>
       <select
-  name="name"
-  value={formData.name}
+  name="client_id"
+  value={formData.client_id}
   onChange={handleChange}
   required
-  className="w-60 mt-2 flex-grow text-xs bg-box border p-2 rounded-md outline-none transition ease-in-out delay-150 focus:shadow-prime focus:shadow-sm"
+   className="w-60 mt-2 flex-grow text-xs bg-box border p-2 rounded-md outline-none transition ease-in-out delay-150 focus:shadow-prime focus:shadow-sm"
 >
   <option value="">Select Name</option>
-  {clientList.map((client, index) => (
-    <option key={index} value={client.id}>
+  {clientList.map((client) => (
+    <option key={client.id} value={client.id}> {/* Send ID, not name */}
       {client.name}
     </option>
   ))}
 </select>
+
+
 
     </div>
     {[
@@ -373,9 +408,9 @@ const Form = () => {
   { label: "BAND WIDTH", type: "text", name: "band_width" },
   { label: "LOCATION TYPE", type: "text", name: "location_type" },
   { label: "ADDRESS", type: "text", name: "address" },
-  { label: "CONTACT NUMBER", type: "tel", name: "contact_num" },
-  { label: "MOBILE NUMBER", type: "tel", name: "mob_num" },
-  { label: "COMMISSIONED DATE", type: "type", name: "commi_date" },
+  { label: "CONTACT NUMBER", type: "number", name: "contact_num" },
+  { label: "MOBILE NUMBER", type: "number", name: "mob_num" },
+  { label: "COMMISSIONED DATE", type: "text", name: "commi_date" },
   { label: "STATE/CITY", type: "text", name: "state_city" },
   { label: "E MAIL ID", type: "email", name: "email" },
   { label: "SLA", type: "text", name: "sla" },
@@ -555,18 +590,36 @@ const Form = () => {
 
     {/* Scrollable Body */}
     <TableBody>
-      {currentTickets.map((user, i) => (
-        <TableRow key={user.id} hover>
-          <TableCell className="border-t p-2">{i + 1}</TableCell>
-          <TableCell className="border-t p-2">{user.name}</TableCell>
-          <TableCell className="border-t p-2">{user.location}</TableCell>
-          <TableCell className="border-t p-2">{user.mobile}</TableCell>
-          <TableCell className="border-t p-2">{user.email}</TableCell>
-          <TableCell className="border-t p-2">{user.department}</TableCell>
-          <TableCell className="border-t p-2">{user.contact_person}</TableCell>
-        </TableRow>
-      ))}
-    </TableBody>
+  {currentTickets.map((user, i) => (
+    <TableRow key={user.id} hover>
+      <TableCell className="border-t p-2">{i + 1}</TableCell>
+      <TableCell className="border-t p-2">{user.client_id}</TableCell> {/* Show client name instead of ID */}
+      <TableCell className="border-t p-2">{user.gcl_unique_code}</TableCell>
+      <TableCell className="border-t p-2">{user.gcl_region}</TableCell>
+      <TableCell className="border-t p-2">{user.branch_code}</TableCell>
+      <TableCell className="border-t p-2">{user.a_end}</TableCell>
+      <TableCell className="border-t p-2">{user.b_end}</TableCell>
+      <TableCell className="border-t p-2">{user.node}</TableCell>
+      <TableCell className="border-t p-2">{user.modem_type}</TableCell>
+      <TableCell className="border-t p-2">{user.router_ip}</TableCell>
+      <TableCell className="border-t p-2">{user.primary_link}</TableCell>
+      <TableCell className="border-t p-2">{user.wan_ip}</TableCell>
+      <TableCell className="border-t p-2">{user.circuit_id}</TableCell>
+      <TableCell className="border-t p-2">{user.band_width}</TableCell>
+      <TableCell className="border-t p-2">{user.location_type}</TableCell>
+      <TableCell className="border-t p-2">{user.address}</TableCell>
+      <TableCell className="border-t p-2">{user.contact_number}</TableCell> 
+      <TableCell className="border-t p-2">{user.mobile_number}</TableCell>
+      <TableCell className="border-t p-2">{user.commi_date}</TableCell>
+      <TableCell className="border-t p-2">{user.state_city}</TableCell>
+      <TableCell className="border-t p-2">{user.email_id}</TableCell>
+      <TableCell className="border-t p-2">{user.sla}</TableCell>
+      <TableCell className="border-t p-2">{user.service_provider}</TableCell>
+    </TableRow>
+  ))}
+</TableBody>
+
+
   </Table>
 </div>
 
