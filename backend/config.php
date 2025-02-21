@@ -98,4 +98,5 @@ try {
 $ipaddress = getenv("REMOTE_ADDR") ?: $_SERVER['REMOTE_ADDR'];
 $hst = $_SERVER['HTTP_HOST'];
 $localIP = getHostByName(getHostName());
+$conn->set_charset("utf8");
 ?>
