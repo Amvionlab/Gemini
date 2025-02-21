@@ -1,6 +1,10 @@
 <?php
 include 'config.php';
+// Function to fetch users from database
+    $sql = "SELECT * FROM customer";
+    $result = $conn->query($sql);
 
+<<<<<<< HEAD
 header('Content-Type: application/json');
 
 $sql = "SELECT * FROM customer";  // Fetch all customers
@@ -34,11 +38,18 @@ if ($result->num_rows > 0) {
             "sla" => $row["sla"],
             "service_provider" => $row["service_provider"]
         ];
+=======
+    $users = array();
+    if ($result->num_rows > 0) {
+        while($row = $result->fetch_assoc()) {
+            $users[] = $row;
+        }
+>>>>>>> 531bc418dc396383731477301311c0774f748408
     }
-    echo json_encode($customers);
-} else {
-    echo json_encode([]);
-}
 
-$conn->close();
+    $conn->close();
+   
+
+
+echo json_encode($users);
 ?>

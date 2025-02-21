@@ -262,7 +262,7 @@ const Form = () => {
                     value={customer.id}
                     className="custom-option"
                   >
-                    {customer.gcl_region} - {customer.gcl_unique_code}
+                    {customer.gcl_region} - {customer.a_end}
                   </option>
                 ))}
               </select>

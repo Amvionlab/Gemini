@@ -25,7 +25,7 @@ if ($id && $value) {
 
         $placeholders = ['{firstname}', '{password}', '{username}'];
         $values = [$firstname, $password, $usernameD];
-    } else if ($id == 2) {
+    } else if ($id == ) {
         $stmt = $conn->prepare("SELECT `created_by` FROM `ticket` WHERE id = ?");
         $stmt->bind_param("i", $value);
         $stmt->execute();
@@ -51,56 +51,21 @@ if ($id && $value) {
             $user,
             
         ];
-
-        // Fetch emails for the given branch and user types
-        $stmt = $conn->prepare("SELECT email FROM user WHERE id = ?");
-        $stmt->bind_param("i", $userid);
-        $stmt->execute();
-        $stmt->bind_result($email);
-        $emails = [];
-        while ($stmt->fetch()) {
-            $emails[] = $email; // Collect all fetched emails
-        }
-        $stmt->close();
-    }
-    else if ($id == 2) {
-        $stmt = $conn->prepare("SELECT `created_by` FROM `ticket` WHERE id = ?");
+        $stmt = $conn->prepare("SELECT `contact_mail` FROM `ticket` WHERE id = ?");
         $stmt->bind_param("i", $value);
+
         $stmt->execute();
-        $stmt->bind_result($userid);
-        $stmt->fetch();
-        $stmt->close();
-
-        $stmt = $conn->prepare("SELECT `firstname` FROM `user` WHERE  id= ?");
-        $stmt->bind_param("i", $userid);
-        $stmt->execute();
-        $stmt->bind_result($user);
-        $stmt->fetch();
-        $stmt->close();
-
-        $placeholders = [
-            '{tno}',
-            '{support}',
-            
-        ];
-
-        $values = [
-            $value,
-            $user,
-            
-        ];
-
-        // Fetch emails for the given branch and user types
-        $stmt = $conn->prepare("SELECT email FROM user WHERE id = ?");
-        $stmt->bind_param("i", $userid);
-        $stmt->execute();
-        $stmt->bind_result($email);
+        $stmt->bind_result($emailString);
         $emails = [];
-        while ($stmt->fetch()) {
-            $emails[] = $email; // Collect all fetched emails
+        if ($stmt->fetch()) {
+          
+            $emails = explode(',', $emailString);
+           
+            $emails = array_map('trim', $emails);
         }
         $stmt->close();
     }
+   
 
 
     if (!empty($emails)) {
