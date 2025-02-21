@@ -139,6 +139,7 @@ const Form = () => {
     e.preventDefault();
     document.body.classList.add('cursor-wait', 'pointer-events-none');
     const form = new FormData();
+    console.log('formData:', formData);
     for (const key in formData) {
       form.append(key, formData[key]);
     }
@@ -152,6 +153,7 @@ const Form = () => {
         method: "POST",
         body: form,
       });
+
       const result = await response.json();
       console.log(result)
       if (!response.ok) {
@@ -260,7 +262,7 @@ const Form = () => {
                     value={customer.id}
                     className="custom-option"
                   >
-                    {customer.gcl_region} - {customer.gcl_unique_code}
+                    {customer.gcl_region} - {customer.a_end}
                   </option>
                 ))}
               </select>
@@ -408,7 +410,7 @@ const Form = () => {
                 Email
               </label>
               <input
-                type="email"
+                type="text"
                 name="contact_mail"
                 placeholder="Enter Contact Email"
                 value={formData.contact_mail}

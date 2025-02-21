@@ -25,7 +25,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         ticket_noc.name AS ticket_noc_value,
         ticket_service.name AS ticket_service_value,
         domain.name AS ticket_domain_value,
-        customer.name AS ticket_customer_value,
+        client.name AS ticket_customer_value,
         location.name AS ticket_location_value,
         sla.level AS ticket_sla_value,
         department.name AS ticket_department_value,
@@ -48,7 +48,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     LEFT JOIN 
         domain ON ticket.domain = domain.id
     LEFT JOIN 
-        customer ON ticket.customer_name = customer.id
+        client ON ticket.customer_name = client.id
     LEFT JOIN 
         location ON ticket.customer_location = location.id
     LEFT JOIN 

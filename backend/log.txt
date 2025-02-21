@@ -1,5 +1,24 @@
+<<<<<<< HEAD
 2025-02-21 07:02:18 - Script started
 2025-02-21 07:02:19 - Preparing SQL statement
 2025-02-21 07:02:19 - Ticket inserted successfully, ID: 1161
 2025-02-21 07:02:26 - Log inserted successfully
 2025-02-21 07:02:26 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+=======
+2025-02-21 06:54:20 - Script started
+2025-02-21 06:54:20 - Invalid email format: mns-support@hughes.ino4812@os.hughes.inrl.mh@gcl.inkurinji@gcl.in
+2025-02-21 06:59:48 - Script started
+2025-02-21 06:59:48 - Invalid email format: mns-support@hughes.ino4812@os.hughes.inrl.mh@gcl.inkurinji@gcl.in
+2025-02-21 07:02:57 - Script started
+2025-02-21 07:02:57 - Invalid email format: rh.ka@gcl.infm@ktkbank.comfmtl@ktkbank.commangalore_nis@ktkbank.comktkbank@gcl.inkurinji@gcl.insampath@gcl.inrh.mh@gcl.inrl.mh@gcl.inrl.mh@gcl.in
+2025-02-21 07:05:09 - Script started
+2025-02-21 07:05:09 - Preparing SQL statement
+2025-02-21 07:05:09 - Ticket inserted successfully, ID: 1171
+2025-02-21 07:05:13 - Log inserted successfully
+2025-02-21 07:05:13 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-02-21 07:44:29 - Script started
+2025-02-21 07:44:29 - Preparing SQL statement
+2025-02-21 07:44:29 - Ticket inserted successfully, ID: 1172
+2025-02-21 07:44:32 - Log inserted successfully
+2025-02-21 07:44:32 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+>>>>>>> e86cacbf4a89717908786b41376d23b46ec1d69f

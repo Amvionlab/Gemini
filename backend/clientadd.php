@@ -32,7 +32,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
 
 
     // Insert user data into 'users' table
-    $sql = "INSERT INTO clientadd (name ,is_active) VALUES ('$domainname', '1')"; 
+    $sql = "INSERT INTO client (name ,is_active) VALUES ('$domainname', '1')"; 
 
     if ($conn->query($sql) === TRUE) {
         $response = array('success' => true, 'message' => 'Ticket NOC added successfully.');

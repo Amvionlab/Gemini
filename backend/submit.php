@@ -44,9 +44,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $contact_person = htmlspecialchars(trim($_POST['contact_person'] ?? ''));
     $contact_number = htmlspecialchars(trim($_POST['contact_number'] ?? ''));
     $contact_mail = htmlspecialchars(trim($_POST['contact_mail'] ?? ''));
-    if ($_POST['contact_mail'] != '') {
-        $contact_mail = filter_var($_POST['contact_mail'], FILTER_SANITIZE_EMAIL);
-    }
+  
     $nature_of_call = htmlspecialchars(trim($_POST['nature_of_call'] ?? ''));
     $ticket_type = htmlspecialchars(trim($_POST['ticket_type'] ?? ''));
     $ticket_date = htmlspecialchars(trim($_POST['ticket_date'] ?? ''));
@@ -59,11 +57,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = 1;
 
     // Validate email format
-    if ($_POST['contact_mail'] != '' && !filter_var($contact_mail, FILTER_VALIDATE_EMAIL)) {
-        logMessage("Invalid email format: {$contact_mail}");
-        echo json_encode(['status' => 'error', 'message' => 'Invalid email format.']);
-        exit;
-    }
+    // if ($_POST['contact_mail'] != '' && !filter_var($contact_mail, FILTER_VALIDATE_EMAIL)) {
+    //     logMessage("Invalid email format: {$contact_mail}");
+    //     echo json_encode(['status' => 'error', 'message' => 'Invalid email format.']);
+    //     exit;
+    // }
 
     // Ensure no blank inserts
     if (!empty($customer_name)) {
