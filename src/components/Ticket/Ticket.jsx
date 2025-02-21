@@ -117,6 +117,7 @@ const Form = () => {
     (sla) => sla.customer_id === formData.customer_name
   );
   console.log(filteredSla);
+  
   const handleSubmit = async (e) => {
     e.preventDefault();
     document.body.classList.add('cursor-wait', 'pointer-events-none');
@@ -135,6 +136,7 @@ const Form = () => {
         body: form,
       });
       const result = await response.json();
+      console.log(result)
       if (!response.ok) {
         throw new Error(result.message || "Something went wrong");
       }

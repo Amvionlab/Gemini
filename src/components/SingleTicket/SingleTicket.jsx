@@ -65,7 +65,7 @@ const SingleTicket = () => {
   const id = ticketId;
   const [page, setPage] = useState(0);
   const [rowsPerPage, setRowsPerPage] = useState(5);
-
+  const [selectedDate, setSelectedDate] = useState("");
   const offset = page * rowsPerPage;
   const [ticketData, setTicketData] = useState(null);
   const [currentStep, setCurrentStep] = useState(0);
@@ -80,6 +80,69 @@ const SingleTicket = () => {
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [users2, setUsers2] = useState([]);
   const [filteredUsers2, setFilteredUsers2] = useState([]);
+  const [selectedVendors, setSelectedVendors] = useState([]);
+  const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
+  const [vendors, setVendors] = useState([]);
+
+// Add missing functions
+const handleVendorModalClose = () => setIsVendorModalOpen(false);
+const handleVendorSelectChange = (selectedOptions) => {
+  setSelectedVendors(selectedOptions);
+  updateVendorInDB(ticketId, selectedOptions.map((v) => v.value));
+};
+const handleVendorChipRemove = (vendorToRemove) => {
+  const updatedVendors = selectedVendors.filter((v) => v.value !== vendorToRemove.value);
+  setSelectedVendors(updatedVendors);
+  updateVendorInDB(ticketId, updatedVendors.map((v) => v.value));
+};
+const updateVendorInDB = async (ticketId, vendorIds) => {
+  try {
+    const response = await fetch(`${baseURL}backend/updateVendor.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ ticket_id: ticketId, vendor_ids: vendorIds }),
+    });
+
+    const data = await response.json();
+    if (!response.ok) throw new Error(data.message || "Failed to update vendor");
+
+    console.log(`Vendors updated successfully for Ticket ID ${ticketId}`);
+  } catch (error) {
+    console.error("Error updating vendors:", error);
+  }
+};
+
+const vendorConfirm = () => {
+  console.log("Vendors selected:", selectedVendors);
+};
+
+useEffect(() => {
+  fetch(`${baseURL}backend/fetchVendor.php`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (Array.isArray(data)) {
+        const vendorOptions = data.map((vendor) => ({
+          value: vendor.id,
+          label: vendor.name,
+        }));
+        setVendors(vendorOptions);
+      } else {
+        console.error("Invalid response format:", data);
+      }
+    })
+    .catch((error) => console.error("Error fetching vendors:", error));
+}, [baseURL]);
+
+useEffect(() => {
+  fetch(`${baseURL}backend/fetchSelectedVendors.php?id=${ticketId}`)
+    .then((response) => response.json())
+    .then((data) => {
+      if (data.vendors) {
+        setSelectedVendors(data.vendors);
+      }
+    })
+    .catch((error) => console.error("Error fetching selected vendors:", error));
+}, [ticketId, baseURL]);
 
   const [filters, setFilters] = useState({});
   const [showFilter, setShowFilter] = useState({
@@ -176,6 +239,28 @@ const SingleTicket = () => {
       ...prevFilters,
       [field]: { type, value },
     }));
+  };
+
+  const updateVendorsInDB = async (ticketId, vendorId) => {
+    try {
+      const response = await fetch(`${baseURL}backend/updateVendor.php`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({
+          ticket_id: ticketId,
+          vendor_id: vendorId, // Ensure we send the correct vendor ID
+        }),
+      });
+  
+      const data = await response.json();
+      if (!response.ok) throw new Error(data.message || "Failed to update vendor");
+  
+      console.log(`✅ Vendor ID ${vendorId} updated successfully for Ticket ID ${ticketId}`);
+    } catch (error) {
+      console.error("❌ Error updating vendor:", error);
+    }
   };
 
   useEffect(() => {
@@ -727,11 +812,10 @@ const SingleTicket = () => {
 
   const updateAssignees = async (newAssignees) => {
     const data = {
-      id: id, // ticket id
-      assignees: newAssignees.map((option) => option.value), // array of user IDs
-      done: user.userId, // current user performing the assignment
+      id: id,
+      assignees: newAssignees.map((option) => option.value),
+      done: user.userId,
     };
-  
     try {
       const response = await fetch(`${baseURL}backend/assign.php`, {
         method: "POST",
@@ -740,13 +824,13 @@ const SingleTicket = () => {
         },
         body: JSON.stringify(data),
       });
-  
+
       const result = await response.json();
       console.log(result.message);
     } catch (error) {
       console.error("Failed to update assignees", error);
     }
-  };  
+  };
 
   const handleChipRemove = (option) => {
     const newOptions = selectedOptions.filter((o) => o.value !== option.value);
@@ -761,17 +845,22 @@ const SingleTicket = () => {
 
   const logStatusChange = async (fromStatus, toStatus) => {
     try {
+      
+      const params = new URLSearchParams({
+        tid: ticketId,
+        from_status: fromStatus,
+        to_status: toStatus,
+        done_by: user.userId,
+        date: selectedDate || null
+      });
+      
+     
       const response = await fetch(
         `${baseURL}backend/log_ticket_movement.php`,
         {
           method: "POST",
           headers: { "Content-Type": "application/x-www-form-urlencoded" },
-          body: new URLSearchParams({
-            tid: id,
-            from_status: fromStatus,
-            to_status: toStatus,
-            done_by: user.userId,
-          }),
+          body: params,
         }
       );
 
@@ -857,6 +946,7 @@ const SingleTicket = () => {
       }));
       setCurrentStep(selectedStep);
       setOpen(false);
+      fetchTicket();
     } catch (error) {
       toast.error(`Error updating status: ${error.message}`);
     }
@@ -876,8 +966,8 @@ const SingleTicket = () => {
   ];
 
   const ticketDetails = [
-    { label: "Nature of Call", value: ticketData.ticket_noc_value },
     { label: "Type of Ticket", value: ticketData.ticket_type_value },
+    { label: "Scheduled Date", value: ticketData.scheduled_date },
     { label: "Type of Service", value: ticketData.ticket_service_value },
     { label: "Domain", value: ticketData.ticket_domain_value },
     { label: "Sub Domain", value: ticketData.ticket_subdomain_value },
@@ -889,9 +979,9 @@ const SingleTicket = () => {
   };
 
   return (
-    <div className="bg-second font-sui h-full overflow-hidden p-0.5">
+    <div className="bg-second font-sui h-full overflow-hidden p-1">
       {user && user.ticketaction === "1" && (
-        <div className=" progress-container w-full bg-box  h-[15%] py-14 mb-0.5 ">
+        <div className=" progress-container w-full bg-box  h-[15%] py-14 mb-1 ">
           <div className="bar bg-second ">
             <div
               className="bar__fill bg-flo"
@@ -919,7 +1009,7 @@ const SingleTicket = () => {
       <div className="overflow-y-scroll h-[85%]">
         <div className="w-full mx-auto bg-box ">
           <div className="py-2 px-10 flex justify-between items-center bg-white rounded-t-lg shadow-sm">
-            <div className="flex items-center gap-2 w-[50%] text-prime font-bold">
+            <div className="flex items-center gap-2 text-prime font-bold">
               <HiTicket className="text-flo text-4xl" />
               <span className="text-base"> #{ticketData.id}</span>
 
@@ -1062,7 +1152,7 @@ const SingleTicket = () => {
                     <MdSupervisedUserCircle className="text-prime text-2xl" />
                   </button>
                 </div>
-                <div className="flex-nowrap overflow-x-auto bg-box rounded-lg  gap-2 mb-3 p-2 mr-4">
+                <div className="flex-nowrap overflow-x-auto bg-box rounded-lg gap-2 mb-3 p-2 mr-4 max-h-40 overflow-y-auto">
                   {selectedOptions.map((option) => (
                     <div
                       key={option.value}
@@ -1122,7 +1212,98 @@ const SingleTicket = () => {
                 )}
               </div>
             ) : null}
+
+{user && user.assign === "1" && selectedOptions ? (
+<div className="flex-col w-full lg:w-1/5 pr-4 pl-2 pt-2 mr-2">
+  {/* Header with Icon */}
+  <div className="flex items-center gap-2 mb-4">
+    <span className="text-lg font-semibold ml-2 text-prime">Vendor</span>
+    <button
+      type="button"
+      className="text-prime text-xl ml-3"
+      onClick={() => setIsVendorModalOpen(true)}
+    >
+      <MdSupervisedUserCircle className="text-prime text-2xl" />
+    </button>
+  </div>
+
+  {/* Selected Vendors Display */}
+  <div className="flex-nowrap overflow-x-auto bg-box rounded-lg gap-2 mb-3 p-2 mr-4 max-h-40 overflow-y-auto">
+    {selectedVendors.map((vendor) => (
+      <div
+        key={vendor.value}
+        className="flex items-center bg-green-500 text-white text-xs rounded-full px-2 py-1 whitespace-nowrap w-full mb-2"
+      >
+        <span
+          title={vendor.label}
+          className="flex-grow text-xs cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap w-[90%]"
+        >
+          {vendor.label}
+        </span>
+        <button
+          type="button"
+          className="flex-shrink-0 w-[10%] ml-2 text-black font-bold hover:text-gray-300"
+          onClick={() => handleVendorChipRemove(vendor)}
+        >
+          ×
+        </button>
+      </div>
+    ))}
+  </div>
+
+  {/* Vendor Selection Modal */}
+  {isVendorModalOpen && (
+    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
+      <div className="bg-white p-6 rounded-lg h-auto shadow-lg w-11/12 sm:w-1/2 lg:w-1/3">
+        <h2 className="text-lg font-semibold mb-4">Select Vendors</h2>
+
+        {/* Vendor Dropdown (Multi-select) */}
+        <Select
+          isMulti
+          name="vendor"
+          options={vendors}
+          classNamePrefix="select"
+          className="text-xs bg-second border p-1 border-none rounded-md outline-none focus:border-bgGray focus:ring-bgGray"
+          onChange={(selectedOptions) => {
+            setSelectedVendors(selectedOptions);
+            updateVendorInDB(ticketId, selectedOptions.map((v) => v.value));
+          }}
+          value={selectedVendors}
+          placeholder="Select Vendor"
+        />
+
+        {/* Close Button */}
+        <div className="mt-4 flex justify-between">
+          <button
+            type="button"
+            className="bg-gray-500 text-white px-4 py-2 rounded-md"
+            onClick={() => {
+              fetch(`${baseURL}backend/fetchSelectedVendors.php?id=${ticketId}`)
+                .then((response) => response.json())
+                .then((data) => {
+                  setSelectedVendors(data.vendors || []);
+                })
+                .catch((error) => console.error("Error fetching selected vendors:", error));
+              setIsVendorModalOpen(false);
+            }}
+          >
+            Cancel
+          </button>
+          <button
+            type="button"
+            className="bg-red-500 text-white px-4 py-2 rounded-md"
+            onClick={() => setIsVendorModalOpen(false)}
+          >
+            Close
+          </button>
+        </div>
+      </div>
+    </div>
+  )}
+</div>
+    ) : null}
           </div>
+          
         </div>
         {addEntry && (
           <div className="fixed w-[100%] h-[100%] bg-black/70 top-0 left-0 z-10 items-center justify-center">
@@ -1236,7 +1417,7 @@ const SingleTicket = () => {
           </div>
         )}
 
-        <div className="max-w-full w-full bg-box p-3 rounded text-xs">
+        <div className="max-w-full w-full mt-2 bg-box p-3 rounded text-xs">
           <div className="flex justify-center space-x-4 mb-4">
             <button
               onClick={() => setShowTimesheet(true)}
@@ -1602,16 +1783,34 @@ const SingleTicket = () => {
           {"Change Ticket Status"}
         </DialogTitle>
         <DialogContent>
-          <DialogContentText id="alert-dialog-description">
-            Are you sure you want to change the ticket status to{" "}
-            {status[selectedStep]?.subName}?
-          </DialogContentText>
-        </DialogContent>
+  <DialogContentText id="alert-dialog-description">
+    Are you sure you want to change the ticket status to{" "}
+    {status[selectedStep]?.subName}?
+  </DialogContentText>
+<br></br>
+
+    <TextField
+      label="Select Date"
+      type="datetime-local"
+      fullWidth
+      margin="dense"
+      required
+      InputLabelProps={{ shrink: true }}
+      value={selectedDate}
+      onChange={(e) => setSelectedDate(e.target.value)}
+    />
+  
+</DialogContent>
         <DialogActions>
           <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button onClick={handleConfirm} autoFocus>
-            Confirm
-          </Button>
+          <Button
+          onClick={handleConfirm}
+          autoFocus
+          disabled={status[selectedStep]?.subName === "Scheduled" && !selectedDate}
+        >
+         Confirm
+        </Button>
+          
         </DialogActions>
       </Dialog>
     </div>
