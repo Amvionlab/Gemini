@@ -15,7 +15,7 @@ if ($result->num_rows > 0) {
             "gcl_unique_code" => $row["gcl_unique_code"],
             "gcl_region" => $row["gcl_region"],
             "branch_code" => $row["branch_code"],
-            "a_end" => $row["a_end"],
+            "a_end" => $row["a_end"], 
             "b_end" => $row["b_end"],
             "node" => $row["node"],
             "modem_type" => $row["modem_type"],
