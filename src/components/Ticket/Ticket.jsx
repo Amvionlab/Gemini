@@ -352,7 +352,7 @@ const Form = () => {
                  />
             <div className="flex items-center mb-3 mr-4">
         <label className="text-sm font-semibold text-prime mr-2 w-32">
-          Domain <span className="text-red-600 text-md font-bold">*</span>
+          Catagory <span className="text-red-600 text-md font-bold">*</span>
         </label>
         <select
           name="domain"
@@ -362,7 +362,7 @@ const Form = () => {
           className="flex-grow text-xs bg-box border p-1.5  rounded outline-none focus:border-flo focus:ring-flo max-w-72"
         >
           <option value="" className="custom-option">
-            Select Domain
+            Select Catagory
           </option>
           {domains.map((domain) => (
             <option key={domain.id} value={domain.id} className="custom-option">
@@ -386,7 +386,7 @@ const Form = () => {
             </div>
             <div className="flex items-center mb-3 mr-4">
         <label className="text-sm font-semibold text-prime mr-2 w-32">
-          Sub Domain
+          Sub Catagory
         </label>
         <select
           name="sub_domain"
@@ -396,7 +396,7 @@ const Form = () => {
           disabled={!formData.domain}
         >
           <option value="" className="custom-option">
-            Select Sub Domain
+            Select Sub Catagory
           </option>
           {filteredSubDomains.map((subDomain) => (
             <option key={subDomain.id} value={subDomain.id} className="custom-option">

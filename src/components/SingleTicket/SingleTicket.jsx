@@ -969,8 +969,8 @@ useEffect(() => {
     { label: "Type of Ticket", value: ticketData.ticket_type_value },
     { label: "Scheduled Date", value: ticketData.scheduled_date },
     { label: "Type of Service", value: ticketData.ticket_service_value },
-    { label: "Domain", value: ticketData.ticket_domain_value },
-    { label: "Sub Domain", value: ticketData.ticket_subdomain_value },
+    { label: "Catagory", value: ticketData.ticket_domain_value },
+    { label: "Sub Catagory", value: ticketData.ticket_subdomain_value },
     { label: "SLA Level", value: ticketData.ticket_sla_value },
   ];
 
