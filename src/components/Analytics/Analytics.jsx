@@ -21,6 +21,10 @@ import {
 import { UserContext } from "../UserContext/UserContext.jsx";
 import Chart from "react-google-charts";
 import { PieChart } from "@mui/x-charts";
+import InputLabel from '@mui/material/InputLabel';
+
+
+
 
 function Reports() {
   const [tickets, setTickets] = useState([]);
@@ -32,40 +36,65 @@ function Reports() {
   const [selectedLabels, setSelectedLabels] = useState([[], [], [], [], []]);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  
+  const [selectedDateFilter, setSelectedDateFilter] = useState("createdAt"); // Default: Created At
 
-  const csvData = Array.isArray(filteredTickets) ? filteredTickets.map((ticket) => ({
-    
-    Id: ticket.id,
-    Type: ticket.type,
-    SLA: ticket.sla,
-    Status: ticket.status,
-    Service: ticket.service,
-    Department: ticket.department,
-    Assignees: ticket.assignees,
-    Domain: ticket.domain,
-    SubDomain: ticket.subdomain,
-    Customer: ticket.customer,
-    "Created At": ticket.post_date,
-    "Created By": ticket.name,
-    "Closed At": ticket.closed_date,
-})) : [];
+  const csvData = Array.isArray(filteredTickets)
+  ? filteredTickets.map((ticket) => ({
+      id: ticket.id,
+      type: ticket.type,
+      sla_priority: ticket.sla,  // Match header key
+      status: ticket.status,
+      ticket_service: ticket.service,  // Match header key
+      customer_department: ticket.department,  // Match header key
+      customer: ticket.customer,
+      assignees: ticket.assignees,
+      domain: ticket.domain,
+      subdomain: ticket.subdomain,
+      created_by: ticket.name,  // Match header key
+      post_date: ticket.post_date,  // Match header key
+      closed_date: ticket.closed_date,  // Match header key
+    }))
+  : [];
 
 
-const headers = [
-  { label: "Id", key: "id" },
-  { label: "Type", key: "type" },
-  { label: "SLA Priority", key: "sla_priority" },
-  { label: "Status", key: "status" },
-  { label: "Ticket Service", key: "ticket_service" },
-  { label: "Customer Department", key: "customer_department" },
-  { label: "Customer", key: "customer" },
-  { label: "Assignees", key: "assignees" },
-  { label: "Domain", key: "domain" },
-  { label: "SubDomain", key: "subdomain" },
-  { label: "Created By", key: "created_b   y" },
-  { label: "Created At", key: "post_date" },
-];
 
+  const headers = [
+    { label: "Id", key: "id" },
+    { label: "Type", key: "type" },
+    { label: "SLA Priority", key: "sla_priority" },
+    { label: "Status", key: "status" },
+    { label: "Ticket Service", key: "ticket_service" },
+    { label: "Customer Department", key: "customer_department" },
+    { label: "Customer", key: "customer" },
+    { label: "Assignees", key: "assignees" },
+    { label: "Domain", key: "domain" },
+    { label: "SubDomain", key: "subdomain" },
+    { label: "Created By", key: "name" },  // Fix key
+    { label: "Created At", key: "post_date" },  // Fix key
+    { label: "Closed At", key: "closed_date" },  // Fix key
+  ];
+  
+
+const [age, setAge] = React.useState('');
+
+  const handleChange = (event) => {
+    setAge(event.target.value);
+  };
+
+
+  useEffect(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0]; // Correct today's date
+  
+    // First day of the current month (Fixed Time Zone Issue)
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const firstDayStr = firstDayOfMonth.toLocaleDateString("en-CA"); // "YYYY-MM-DD" format
+  
+    setFromDate(firstDayStr);
+    setToDate(todayStr);
+  }, []);
+  
 
   useEffect(() => {
     const fetchTickets = async (value) => {
@@ -103,6 +132,8 @@ const headers = [
     const updatedLabels = [...selectedLabels];
     updatedLabels[index] = typeof value === "string" ? value.split(",") : value;
     setSelectedLabels(updatedLabels);
+    
+
   };
 
   // Improved groupDataByField function
@@ -120,6 +151,8 @@ const groupDataByField = (field, data) => {
 
   return groupedData;
 };
+
+
 
   // Generate data for the selected filter based on filteredTickets
   const domainData = groupDataByField(selectedFilter, filteredTickets);
@@ -155,6 +188,8 @@ const groupDataByField = (field, data) => {
     pieSliceTextStyle: { fontSize: 20 },
     titleTextStyle: { fontSize: 18, color: "#000" },
   };
+
+
 
   const handlePageChange = (event, newPage) => setPage(newPage);
   const handleRowsPerPageChange = (event) => {
@@ -211,44 +246,56 @@ const stableSort = (array, comparator) => {
   );
 
   useEffect(() => {
-    // Filter by selected labels
-    const filteredByLabels = tickets.filter((ticket) =>
+    let filteredData = tickets;
+  
+    // Step 1: Filter by selected labels
+    filteredData = filteredData.filter((ticket) =>
       selectedLabels.every((labels, index) => {
-        const field = ["type","SLA", "status", "customer", "assignees", "domain"][
-          index
-        ];
-        return labels.length === 0 || labels.includes(ticket[field] || "");
+        const field = ["type", "SLA", "status", "customer", "assignees", "domain"][index];
+  
+        // Ensure the field exists and is a string before calling .toLowerCase()
+        const ticketValue = ticket[field] ? ticket[field].toString().toLowerCase() : "";  
+  
+        return labels.length === 0 || labels.some(label => 
+          ticketValue.includes(label.toLowerCase()) // Ensure label comparison works
+        );
       })
     );
-
-    let filteredByDate = filteredByLabels;
-
+  
+    // Step 2: Filter by selected date type (Created At or Closed At)
     if (fromDate || toDate) {
-      filteredByDate = filteredByLabels.filter((ticket) => {
-        const ticketDate = ticket.post_date.split(" ")[0];
-
-        // Set defaults if fromDate or toDate is missing
-        const start = fromDate || "1900-01-01";
-        const end = toDate || "2100-01-01";
-
-        return ticketDate >= start && ticketDate <= end;
+      filteredData = filteredData.filter((ticket) => {
+        const dateField = selectedDateFilter === "createdAt" ? ticket.post_date : ticket.closed_date;
+  
+        if (!dateField) return false; // Skip filtering if dateField is null/undefined
+  
+        const ticketDate = dateField.split(" ")[0]; // Extract only the date (YYYY-MM-DD)
+        const startDate = fromDate ? new Date(fromDate) : new Date("1900-01-01");
+        const endDate = toDate ? new Date(toDate) : new Date("2100-01-01");
+        const selectedDate = new Date(ticketDate);
+  
+        return selectedDate >= startDate && selectedDate <= endDate;
       });
     }
+  
+    // Step 3: Update the state with filtered tickets
+    setFilteredTickets(filteredData);
+  }, [selectedLabels, tickets, fromDate, toDate, selectedDateFilter]);
+  
+  
+  
 
-    // Update state with filtered tickets
-    setFilteredTickets(filteredByDate);
-  }, [selectedLabels, tickets, fromDate, toDate]);
-
+  
   return (
     <div className="bg-second h-full overflow-hidden">
       <div className="m-0.5 p-1 h-[10%] bg-box w-full flex justify-center items-center">
         <div className="flex justify-center items-center text-xs w-full gap-4 ">
-          <p className="font-semibold text-sm">Filter :</p>
+          <p className="font-semibold text-sm w-16">Filter :</p>
           {selectedLabels.map((selectedLabel, index) => (
             <FormControl key={index} sx={{ m: 0.5, width: 125, height: 30 }}>
               <Select
                 multiple
-                className="border"
+                className="border w-28"
                 displayEmpty
                 value={selectedLabel}
                 onChange={handleFilterChange(index)}
@@ -260,7 +307,7 @@ const stableSort = (array, comparator) => {
                         color: "#aaa",
                       }}
                     >
-                      Select
+                      
                       {
                         [
                           " type",
@@ -309,42 +356,65 @@ const stableSort = (array, comparator) => {
             </FormControl>
           ))}
 
-          <div
-            className="border-black border rounded-md p-1"
-            onClick={() => document.getElementById("fromDate").showPicker()} // Show the date picker on click
-          >
-            <p>From</p>
-            <input
-              type="date"
-              id="fromDate"
-              value={fromDate}
-              onChange={(e) => setFromDate(e.target.value)}
-              className="outline-none border-none" // Ensure no default borders when focused
-            />
-          </div>
 
-          <div className="border-black border rounded-md p-1">
-            <p onClick={() => document.getElementById("toDate").showPicker()}>
-              To
-            </p>
-            <input
-              type="date"
-              value={toDate}
-              onChange={(e) => setToDate(e.target.value)}
-              name=""
-              id="toDate"
-            />
-          </div>
+
+   
+<FormControl sx={{ m: 1, minWidth: 120 }} size="small">
+  <InputLabel id="date-filter-label">Filter By</InputLabel>
+  <Select
+    labelId="date-filter-label"
+    id="date-filter"
+    value={selectedDateFilter}
+    label="Filter By"
+    onChange={(e) => setSelectedDateFilter(e.target.value)}
+  >
+    <MenuItem value="createdAt">Created At</MenuItem>
+    <MenuItem value="closedAt">Closed At</MenuItem>
+  </Select>
+</FormControl>
+
+
+<div className="border-black border rounded-md p-1">
+      <p>From</p>
+      <input
+        type="date"
+        id="fromDate"
+        value={fromDate}
+        onChange={(e) => setFromDate(e.target.value)}
+        max={toDate} // Prevent selecting dates beyond "To Date"
+        className="outline-none border-none"
+      />
+    </div>
+
+    <div className="border-black border rounded-md p-1">
+      <p>To</p>
+      <input
+        type="date"
+        id="toDate"
+        value={toDate}
+        onChange={(e) => setToDate(e.target.value)}
+        min={fromDate} // Prevent selecting dates before "From Date"
+        className="outline-none border-none"
+      />
+    </div>
+
+
           <div
-            className="font-semibold py-1 px-3 rounded border border-[red] text-red-600 hover:bg-red-600 hover:text-white cursor-pointer transition-all duration-150"
-            onClick={() => {
-              setSelectedLabels([[], [], , [], [], []]),
-                setFromDate(""),
-                setToDate("");
-            }}
-          >
-            <p className="text-xs ">Clear All</p>
-          </div>
+  className="font-semibold py-1 px-3 rounded border border-[red] text-red-600 hover:bg-red-600 hover:text-white cursor-pointer transition-all duration-150"
+  onClick={() => {
+    setSelectedLabels([[], [], [], [], [], []]); // Clear selected labels
+    setFromDate(""); // Clear fromDate
+    setToDate(""); // Clear toDate
+    setSelectedDateFilter("createdAt"); // Reset filter to Created At
+  }}
+>
+  <p className="text-xs">Clear All</p>
+</div>
+
+
+
+     
+
         </div>
       </div>
 
