@@ -7,12 +7,16 @@ import { UserContext } from "../UserContext/UserContext";
 import { useTicketContext } from "../UserContext/TicketContext";
 import {
   Dialog,
-  DialogActions,
+  DialogTitle,
   DialogContent,
   DialogContentText,
-  DialogTitle,
+  DialogActions,
   Button,
-  TextField
+  TextField,
+  FormControl,
+  InputLabel,
+  Select,
+  MenuItem,
 } from "@mui/material";
 
 const App = () => {
@@ -29,6 +33,9 @@ const App = () => {
   const [activeTypeId, setActiveTypeId] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
   const scrollContainerRef = useRef();
+  const [selectedRCA, setSelectedRCA] = useState("");
+  const [rcaList, setRcaList] = useState([]);
+  const { ticketId: selectedTicketId } = useTicketContext();
 
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -115,6 +122,23 @@ const App = () => {
     setDraggedItem(ticket);
   }, []);
 
+  
+    // Fetch RCA data on mount
+    useEffect(() => {
+      const fetchRcaData = async () => {
+        try {
+          const response = await fetch(`${baseURL}Backend/fetchRca.php`);
+          const data = await response.json();
+          setRcaList(data);
+        } catch (error) {
+          console.error("Error fetching RCA data:", error);
+        }
+      };
+      fetchRcaData();
+    }, []);
+
+    const targetColumnTitle = columns.find((col) => col.id === targetColumnId)?.title;
+
   const handleDrop = useCallback((e, columnId) => {
     e.preventDefault();
     if (draggedItem) {
@@ -152,6 +176,69 @@ const App = () => {
     setTicketToMove(null);
     setTargetColumnId(null);
   };
+
+  const handleConfirm = async () => {
+    if (!ticketToMove) {
+      console.error("Error: ticketToMove is undefined!");
+      alert("Error: No ticket selected.");
+      return;
+    }
+  
+    const { ticketId, fromStatus, columnId } = ticketToMove; // Get ticket details from state
+  
+    if (!ticketId) {
+      console.error("Error: Ticket ID is missing!");
+      alert("Error: Ticket ID not found.");
+      return;
+    }
+  
+    if (targetColumnTitle === "Closed" && !selectedRCA) {
+      alert("Please select an RCA before closing the ticket.");
+      return;
+    }
+  
+    const requestData = {
+      ticket_id: ticketId, // Use correct ticket ID
+      rca_id: selectedRCA,
+      move_date: selectedDate,
+      done_by: user?.name || "System",
+    };
+  
+    try {
+      const response = await fetch(`${baseURL}Backend/updateTicketRca.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(requestData),
+      });
+  
+      const text = await response.text();
+      try {
+        const result = JSON.parse(text);
+        if (result.success) {
+          alert("Ticket updated successfully!");
+          await updateStatus(ticketId, columnId);
+          await logTicketMovement(ticketId, fromStatus, columnId);
+          setTickets((prevTickets) =>
+            prevTickets.map((ticket) =>
+              ticket.id === ticketId ? { ...ticket, status: columnId } : ticket
+            )
+          );
+          fetchTickets(activeTypeId);
+        } else {
+          alert(`Error: ${result.error}`);
+        }
+      } catch (jsonError) {
+        console.error("Invalid JSON response:", text);
+        alert("Error: Invalid server response. Check console.");
+      }
+    } catch (error) {
+      console.error("Error updating ticket:", error);
+    }
+  
+    setIsPopupOpen(false);
+    setTicketToMove(null);
+    setTargetColumnId(null);
+  };  
 
   const updateStatus = async (itemId, newColumnId) => {
     try {
@@ -327,39 +414,44 @@ const App = () => {
       </div>
 
       {user && user.ticketaction === "1" && (
-        <Dialog
-          open={isPopupOpen}
-          onClose={handleCancelMove}
-          aria-labelledby="alert-dialog-title"
-          aria-describedby="alert-dialog-description"
-        >
+        <Dialog open={isPopupOpen} onClose={handleCancelMove} aria-labelledby="alert-dialog-title">
           <DialogTitle id="alert-dialog-title">{"Confirm Move"}</DialogTitle>
           <DialogContent>
-            <DialogContentText id="alert-dialog-description">
-              {`Do you want to move to ${
-                columns.find((col) => col.id === targetColumnId)?.title
-              }?`}
-              <br /><br />
+            <DialogContentText>
+              {`Do you want to move to ${targetColumnTitle}?`}
+              <br />
+              <br />
             </DialogContentText>
-           
-              <TextField
-                label="Select Date"
-                type="datetime-local"
-                fullWidth
-                margin="dense"
-                required
-                InputLabelProps={{ shrink: true }}
-                value={selectedDate}
-                onChange={(e) => setSelectedDate(e.target.value)}
-              />
-         
+
+            {/* Date Picker */}
+            <TextField
+              label="Select Date"
+              type="datetime-local"
+              fullWidth
+              margin="dense"
+              required
+              InputLabelProps={{ shrink: true }}
+              value={selectedDate}
+              onChange={(e) => setSelectedDate(e.target.value)}
+            />
+
+            {/* RCA Dropdown - Only if moving to Closed */}
+            {targetColumnTitle === "Closed" && (
+              <FormControl fullWidth margin="dense">
+                <InputLabel>Select RCA</InputLabel>
+                <Select value={selectedRCA} onChange={(e) => setSelectedRCA(e.target.value)}>
+                  {rcaList.map((rca) => (
+                    <MenuItem key={rca.id} value={rca.id}>
+                      {rca.name}
+                    </MenuItem>
+                  ))}
+                </Select>
+              </FormControl>
+            )}
           </DialogContent>
+
           <DialogActions>
-            <Button
-              onClick={handleConfirmMove}
-              autoFocus
-             // disabled={columns.find((col) => col.id === targetColumnId)?.title.includes("Scheduled") && !selectedDate}
-            >
+            <Button onClick={handleConfirm} autoFocus>
               Yes
             </Button>
             <Button onClick={handleCancelMove}>No</Button>

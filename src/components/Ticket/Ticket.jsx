@@ -328,7 +328,7 @@ const Form = () => {
               <label className="text-sm font-semibold text-prime mr-2 w-32">
                 Unique_Code:
               </label>
-              <input
+              <inputsss
                 type="text"
                 name="customer_department"
                 placeholder="Enter Unique Code"
