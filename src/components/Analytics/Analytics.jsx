@@ -68,8 +68,8 @@ function Reports() {
     { label: "Customer Department", key: "customer_department" },
     { label: "Customer", key: "customer" },
     { label: "Assignees", key: "assignees" },
-    { label: "Domain", key: "domain" },
-    { label: "SubDomain", key: "subdomain" },
+    { label: "Catagory", key: "domain" },
+    { label: "Sub Catagory", key: "subdomain" },
     { label: "Created By", key: "name" },  // Fix key
     { label: "Created At", key: "post_date" },  // Fix key
     { label: "Closed At", key: "closed_date" },  // Fix key

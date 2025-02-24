@@ -25,31 +25,24 @@ if ($id && $value) {
 
         $placeholders = ['{firstname}', '{password}', '{username}'];
         $values = [$firstname, $password, $usernameD];
-    } else if ($id == ) {
-        $stmt = $conn->prepare("SELECT `created_by` FROM `ticket` WHERE id = ?");
+    } else if ($id == 2) {
+        $stmt = $conn->prepare("SELECT `contact_number` FROM `ticket` WHERE id = ?");
         $stmt->bind_param("i", $value);
         $stmt->execute();
-        $stmt->bind_result($userid);
+        $stmt->bind_result($wan);
         $stmt->fetch();
         $stmt->close();
 
-        $stmt = $conn->prepare("SELECT `firstname` FROM `user` WHERE  id= ?");
-        $stmt->bind_param("i", $userid);
-        $stmt->execute();
-        $stmt->bind_result($user);
-        $stmt->fetch();
-        $stmt->close();
+      
 
         $placeholders = [
             '{tno}',
-            '{user}',
-            
+            '{wan}',
         ];
 
         $values = [
             $value,
-            $user,
-            
+            $wan,    
         ];
         $stmt = $conn->prepare("SELECT `contact_mail` FROM `ticket` WHERE id = ?");
         $stmt->bind_param("i", $value);

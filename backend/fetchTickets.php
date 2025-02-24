@@ -31,8 +31,10 @@ $sqlTickets = "SELECT
                     SELECT log.post_date 
                     FROM log 
                     WHERE log.tid = ticket.id 
-                    AND log.to_status = 8 
+                    AND log.to_status = 4 
+                    ORDER BY log.id DESC
                     LIMIT 1
+
                 ), 
                 ''
             ) AS closed_date
