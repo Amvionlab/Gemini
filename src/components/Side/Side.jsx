@@ -23,7 +23,7 @@ const SideMenu = () => {
   const menuItems = [
     { title: "Dashboard", icon: faHouse, to: "/dashboard", key: "dashboard" },
     { title: "New Tickets", icon: faListCheck, to: "/ticket", key: "ticket" },
-    { title: "Reports", icon: faFileAlt, to: "/reports", key: "analytics" },
+   // { title: "Reports", icon: faFileAlt, to: "/reports", key: "analytics" },
     { title: "Analytics", icon: faChartPie, to: "/analytics", key: "analytics" },
     { title: "Setup Wizard", icon: faWrench, to: "/setup", key: "creation" },
     
@@ -40,10 +40,10 @@ const SideMenu = () => {
     >
       <aside
         className="relative inset-y-0 z-50 h-full text-sui left-0 py-1 px-1 bg-prime transition-all duration-500 ease-in-out"
-        style={{ width: isExpanded ? "10.5rem" : "4.5rem" }}
+        style={{ width: isExpanded ? "11rem" : "4.5rem" }}
       >
         <nav className="h-full">
-        <ul className="flex flex-col h-full gap-3">
+        <ul className="flex flex-col h-full gap-8">
             <li>
               <Link
                 to="/"
