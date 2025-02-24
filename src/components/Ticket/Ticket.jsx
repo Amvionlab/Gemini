@@ -108,12 +108,15 @@ const Form = () => {
       }
     };  
 
-    const filteredCustomers = customers.filter(
-      (customer) =>
-        customer.gcl_region.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.a_end.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+const filteredByCid = customers.filter(
+  (customer) => customer.cid === formData.customer_name
+);
 
+const filteredCustomers = filteredByCid.filter(
+  (customer) =>
+    customer.gcl_region.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.a_end.toLowerCase().includes(searchTerm.toLowerCase())
+);
     useEffect(() => {
       const handleClickOutside = (event) => {
         if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
