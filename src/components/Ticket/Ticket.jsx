@@ -117,10 +117,6 @@ const filteredCustomers = filteredByCid.filter(
     customer.gcl_region.toLowerCase().includes(searchTerm.toLowerCase()) ||
     customer.a_end.toLowerCase().includes(searchTerm.toLowerCase())
 );
-console.log("Filtered Customers:", filteredCustomers);
-    console.log("Selected Customer Name:", formData.customer_name);
-    
-
     useEffect(() => {
       const handleClickOutside = (event) => {
         if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
@@ -335,7 +331,7 @@ console.log("Filtered Customers:", filteredCustomers);
               <label className="text-sm font-semibold text-prime mr-2 w-32">
                 Unique_Code:
               </label>
-              <inputsss
+              <input
                 type="text"
                 name="customer_department"
                 placeholder="Enter Unique Code"
