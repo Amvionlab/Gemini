@@ -1,4 +1,4 @@
-import React, { useState, useRef, useEffect, useContext } from "react";
+import React, { useState, useRef,useEffect, useContext } from "react";
 
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -127,43 +127,19 @@ const Form = () => {
       };
     }, []);
 
-    useEffect(() => {
-      const handleClickOutside = (event) => {
-        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
-          const isValid = filteredCustomers.some(
-            (customer) =>
-              `${customer.gcl_region} - ${customer.a_end}` === searchTerm
-          );
-          if (!isValid) {
-            setSearchTerm(""); // Reset invalid input
-            setSelectedValue(null);
-            setFormData({ ...formData, customer_location: "" });
-          }
-          setShowDropdown(false);
-        }
-      };
-  
-      document.addEventListener("mousedown", handleClickOutside);
-      return () => {
-        document.removeEventListener("mousedown", handleClickOutside);
-      };
-    }, [searchTerm, filteredCustomers]);
-
     const handleSelect = (customer) => {
-      if (!customer) return;
-    
-      setFormData((prevFormData) => ({
-        ...prevFormData,
-        customer_location: customer.id || "",
+      setFormData({
+        ...formData,
+        customer_location: customer.id,
         customer_department: customer.gcl_unique_code || "",
         contact_person: customer.contact_person || "",
         contact_number: customer.mobile || "",
         contact_mail: customer.email || "",
-      }));
-    
-      setSearchTerm(`${customer.gcl_region || ""} - ${customer.a_end || ""}`);
+      });
+      setSearchTerm(`${customer.gcl_region} - ${customer.a_end}`);
       setShowDropdown(false);
-    };  
+    };
+  
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -195,52 +171,40 @@ const Form = () => {
   
   const handleSubmit = async (e) => {
     e.preventDefault();
-    
-    // Add loading cursor and disable interactions
-    document.body.classList.add("cursor-wait", "pointer-events-none");
-  
+    document.body.classList.add('cursor-wait', 'pointer-events-none');
     const form = new FormData();
-  
-    // Append form data
-    console.log("formData:", formData);
-    Object.entries(formData).forEach(([key, value]) => form.append(key, value));
-  
-    // Append attachment if available
+    console.log('formData:', formData);
+    for (const key in formData) {
+      form.append(key, formData[key]);
+    }
     if (attachment) {
       form.append("attachment", attachment);
     }
-  
+
     try {
+     
       const response = await fetch(`${baseURL}/backend/submit.php`, {
         method: "POST",
         body: form,
       });
-  
-      // Ensure response is valid JSON
+
       const result = await response.json();
-      console.log(result);
-  
+      console.log(result)
       if (!response.ok) {
         throw new Error(result.message || "Something went wrong");
       }
-  
-      // Success handling
       setSubmissionStatus({ success: true, message: result.message });
       toast.success("Ticket added");
+      document.body.classList.remove('cursor-wait', 'pointer-events-none');
       navigate("/dashboard");
-  
     } catch (error) {
-      console.error("Fetch error:", error);
       setSubmissionStatus({
         success: false,
-        message: `There was a problem with your submission: ${error.message}`,
+        message:
+          "There was a problem with your fetch operation: " + error.message,
       });
-      toast.error("Submission failed. Please try again.");
-    } finally {
-      // Remove loading cursor and enable interactions
-      document.body.classList.remove("cursor-wait", "pointer-events-none");
     }
-  };  
+  };
 
   return (
     <div className="bg-second p-0.5 text-xs mx-auto sm:overflow-y-scroll lg::overflow-y-hidden h-auto ticket-scroll ">
@@ -305,40 +269,38 @@ const Form = () => {
             </div>
 
             <div ref={dropdownRef} className="relative flex items-center mb-3 mr-4">
-        <label className="text-sm font-semibold text-prime mr-2 w-32">
-          Location
-        </label>
-        <div className="relative w-72">
-          <input
-            type="text"
-            name="customer_location"
-            placeholder="Search location..."
-            required
-            value={searchTerm}
-            onChange={(e) => {
-              setSearchTerm(e.target.value);
-              setShowDropdown(true);
-            }}
-            onFocus={() => setShowDropdown(true)}
-            className="text-xs bg-box border p-1.5 px-2 w-72 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
-          />
+      <label className="text-sm font-semibold text-prime mr-2 w-32">
+        Location
+      </label>
+      <div className="relative flex-grow min-w-72 max-w-72">
+        <input
+          type="text"
+          name="customer_location"
+          placeholder="Search location..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setShowDropdown(true);
+          }}
+          onFocus={() => setShowDropdown(true)}
+          className="w-72 text-xs bg-box border p-1.5 px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
+        />
 
-          {showDropdown && filteredCustomers.length > 0 && (
-            <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded shadow-lg max-h-40 overflow-y-auto">
-              {filteredCustomers.map((customer) => (
-                <li
-                  key={customer.id}
-                  className="p-2 cursor-pointer hover:bg-gray-200 text-xs"
-                  onClick={() => handleSelect(customer)}
-                >
-                  {customer.gcl_region} - {customer.a_end}
-                </li>
-              ))}
-            </ul>
-          )}
-        </div>
+        {showDropdown && filteredCustomers.length > 0 && (
+          <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded shadow-lg max-h-40 overflow-y-auto">
+            {filteredCustomers.map((customer) => (
+              <li
+                key={customer.id}
+                className="p-2 cursor-pointer hover:bg-gray-200 text-xs"
+                onClick={() => handleSelect(customer)}
+              >
+                {customer.gcl_region} - {customer.a_end}
+              </li>
+            ))}
+          </ul>
+        )}
       </div>
-
+    </div>
             <div className="flex items-center mb-3 mr-4">
               <label className="text-sm font-semibold text-prime mr-2 w-32">
                 Nature of Call
@@ -423,7 +385,7 @@ const Form = () => {
                  />
             <div className="flex items-center mb-3 mr-4">
         <label className="text-sm font-semibold text-prime mr-2 w-32">
-          Catagory <span className="text-red-600 text-md font-bold">*</span>
+        Catagory <span className="text-red-600 text-md font-bold">*</span>
         </label>
         <select
           name="domain"
@@ -444,12 +406,12 @@ const Form = () => {
       </div>
             <div className="flex items-center mb-3 mr-4">
               <label className="text-sm font-semibold text-prime mr-2 w-32">
-                Contact No
+                WAN IP
               </label>
               <input
                 type="tel"
                 name="contact_number"
-                placeholder="Enter Contact No"
+                placeholder="Enter WAN IP"
                 value={formData.contact_number}
                 onChange={handleChange}
                 className="flex-grow text-xs bg-box border p-1.5 px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo max-w-72"

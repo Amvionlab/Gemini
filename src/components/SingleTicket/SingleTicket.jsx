@@ -961,13 +961,13 @@ useEffect(() => {
     { label: "Location", value: ticketData.customer_location },
     { label: "Department", value: ticketData.customer_department },
     { label: "Contact Person", value: ticketData.contact_person },
-    { label: "Contact No", value: ticketData.contact_number },
+    { label: "WAN IP", value: ticketData.contact_number },
     { label: "Email", value: ticketData.contact_mail },
   ];
 
   const ticketDetails = [
     { label: "Type of Ticket", value: ticketData.ticket_type_value },
-    { label: "Scheduled Date", value: ticketData.scheduled_date },
+    { label: "Ticket NOC", value: ticketData.ticket_noc_value },
     { label: "Type of Service", value: ticketData.ticket_service_value },
     { label: "Catagory", value: ticketData.ticket_domain_value },
     { label: "Sub Catagory", value: ticketData.ticket_subdomain_value },

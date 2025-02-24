@@ -25,7 +25,7 @@ if ($id && $value) {
 
         $placeholders = ['{firstname}', '{password}', '{username}'];
         $values = [$firstname, $password, $usernameD];
-    } else if ($id == ) {
+    } else if ($id == 2) {
         $stmt = $conn->prepare("SELECT `contact_number` FROM `ticket` WHERE id = ?");
         $stmt->bind_param("i", $value);
         $stmt->execute();
@@ -38,13 +38,11 @@ if ($id && $value) {
         $placeholders = [
             '{tno}',
             '{wan}',
-            
         ];
 
         $values = [
             $value,
-            $wan,
-            
+            $wan,    
         ];
         $stmt = $conn->prepare("SELECT `contact_mail` FROM `ticket` WHERE id = ?");
         $stmt->bind_param("i", $value);

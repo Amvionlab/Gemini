@@ -74,7 +74,7 @@ if ($resultEmployees->num_rows > 0) {
 
 
 // Fetch customers
-$sqlCustomers = "SELECT id, cid, a_end, gcl_unique_code, gcl_region, contact_person, mobile, email FROM customer";
+$sqlCustomers = "SELECT id, cid, a_end, gcl_unique_code, gcl_region, contact_person, wan_ip, email FROM customer";
 $resultCustomers = $conn->query($sqlCustomers);
 
 $customers = array();
@@ -88,7 +88,7 @@ if ($resultCustomers->num_rows > 0) {
       "gcl_unique_code" => $row["gcl_unique_code"],
       "gcl_region" => $row["gcl_region"],
       "contact_person" => $row["contact_person"],
-      "mobile" => $row["mobile"],
+      "mobile" => $row["wan_ip"],
       "email" => $row["email"]
     );
   }
