@@ -1,4 +1,4 @@
-import React, { useState, useEffect, useContext } from "react";
+import React, { useState, useRef,useEffect, useContext } from "react";
 
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
@@ -40,8 +40,9 @@ const Form = () => {
   const [attachment, setAttachment] = useState(null);
   const [submissionStatus, setSubmissionStatus] = useState(null);
   const [attachmentError, setAttachmentError] = useState("");
- 
- 
+  const [searchTerm, setSearchTerm] = useState("");
+  const [showDropdown, setShowDropdown] = useState(false);
+  const dropdownRef = useRef(null); 
 
   useEffect(() => {
     const fetchData = async () => {
@@ -106,6 +107,39 @@ const Form = () => {
         });
       }
     };  
+
+    const filteredCustomers = customers.filter(
+      (customer) =>
+        customer.gcl_region.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        customer.a_end.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+
+    useEffect(() => {
+      const handleClickOutside = (event) => {
+        if (dropdownRef.current && !dropdownRef.current.contains(event.target)) {
+          setShowDropdown(false);
+        }
+      };
+  
+      document.addEventListener("mousedown", handleClickOutside);
+      return () => {
+        document.removeEventListener("mousedown", handleClickOutside);
+      };
+    }, []);
+
+    const handleSelect = (customer) => {
+      setFormData({
+        ...formData,
+        customer_location: customer.id,
+        customer_department: customer.gcl_unique_code || "",
+        contact_person: customer.contact_person || "",
+        contact_number: customer.mobile || "",
+        contact_mail: customer.email || "",
+      });
+      setSearchTerm(`${customer.gcl_region} - ${customer.a_end}`);
+      setShowDropdown(false);
+    };
+  
 
   const handleFileChange = (e) => {
     const file = e.target.files[0];
@@ -234,40 +268,39 @@ const Form = () => {
               </select>
             </div>
 
-            <div className="flex items-center mb-3 mr-4">
-              <label className="text-sm font-semibold text-prime mr-2 w-32">
-                Location
-              </label>
-              {/* <input
-                type="text"
-                name="customer_location"
-                placeholder="Enter location"
-                value={formData.customer_location}
-                onChange={handleChange}
-                className="flex-grow text-xs bg-box border p-1.5 px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo max-w-72"
-              /> */}
-               <select
-                name="customer_location"
-                value={formData.customer_location}
-                onChange={handleChange}
-                required
-                className="flex-grow text-xs bg-box border p-1.5  rounded outline-none focus:border-flo focus:ring-flo min-w-72 max-w-72"
+            <div ref={dropdownRef} className="relative flex items-center mb-3 mr-4">
+      <label className="text-sm font-semibold text-prime mr-2 w-32">
+        Location
+      </label>
+      <div className="relative flex-grow min-w-72 max-w-72">
+        <input
+          type="text"
+          name="customer_location"
+          placeholder="Search location..."
+          value={searchTerm}
+          onChange={(e) => {
+            setSearchTerm(e.target.value);
+            setShowDropdown(true);
+          }}
+          onFocus={() => setShowDropdown(true)}
+          className="w-72 text-xs bg-box border p-1.5 px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
+        />
+
+        {showDropdown && filteredCustomers.length > 0 && (
+          <ul className="absolute z-10 w-full bg-white border border-gray-300 rounded shadow-lg max-h-40 overflow-y-auto">
+            {filteredCustomers.map((customer) => (
+              <li
+                key={customer.id}
+                className="p-2 cursor-pointer hover:bg-gray-200 text-xs"
+                onClick={() => handleSelect(customer)}
               >
-                <option value="" className="custom-option">
-                  Select Region
-                </option>
-                {filteredCustomer.map((customer) => (
-                  <option
-                    key={customer.id}
-                    value={customer.id}
-                    className="custom-option"
-                  >
-                    {customer.gcl_region} - {customer.a_end}
-                  </option>
-                ))}
-              </select>
-             
-            </div>
+                {customer.gcl_region} - {customer.a_end}
+              </li>
+            ))}
+          </ul>
+        )}
+      </div>
+    </div>
             <div className="flex items-center mb-3 mr-4">
               <label className="text-sm font-semibold text-prime mr-2 w-32">
                 Nature of Call
@@ -352,7 +385,7 @@ const Form = () => {
                  />
             <div className="flex items-center mb-3 mr-4">
         <label className="text-sm font-semibold text-prime mr-2 w-32">
-          Domain <span className="text-red-600 text-md font-bold">*</span>
+        Catagory <span className="text-red-600 text-md font-bold">*</span>
         </label>
         <select
           name="domain"
@@ -362,7 +395,7 @@ const Form = () => {
           className="flex-grow text-xs bg-box border p-1.5  rounded outline-none focus:border-flo focus:ring-flo max-w-72"
         >
           <option value="" className="custom-option">
-            Select Domain
+            Select Catagory
           </option>
           {domains.map((domain) => (
             <option key={domain.id} value={domain.id} className="custom-option">
@@ -373,12 +406,12 @@ const Form = () => {
       </div>
             <div className="flex items-center mb-3 mr-4">
               <label className="text-sm font-semibold text-prime mr-2 w-32">
-                Contact No
+                WAN IP
               </label>
               <input
                 type="tel"
                 name="contact_number"
-                placeholder="Enter Contact No"
+                placeholder="Enter WAN IP"
                 value={formData.contact_number}
                 onChange={handleChange}
                 className="flex-grow text-xs bg-box border p-1.5 px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo max-w-72"
@@ -386,7 +419,7 @@ const Form = () => {
             </div>
             <div className="flex items-center mb-3 mr-4">
         <label className="text-sm font-semibold text-prime mr-2 w-32">
-          Sub Domain
+          Sub Catagory
         </label>
         <select
           name="sub_domain"
@@ -396,7 +429,7 @@ const Form = () => {
           disabled={!formData.domain}
         >
           <option value="" className="custom-option">
-            Select Sub Domain
+            Select Sub Catagory
           </option>
           {filteredSubDomains.map((subDomain) => (
             <option key={subDomain.id} value={subDomain.id} className="custom-option">
