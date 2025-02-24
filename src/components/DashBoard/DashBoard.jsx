@@ -5,6 +5,8 @@ import { backendPort, baseURL } from "../../config.js";
 import { encryptURL } from "../../urlEncrypt";
 import { UserContext } from "../UserContext/UserContext";
 import { useTicketContext } from "../UserContext/TicketContext";
+import { toast } from "react-toastify";
+import "react-toastify/dist/ReactToastify.css";
 import {
   Dialog,
   DialogTitle,
@@ -179,66 +181,67 @@ const App = () => {
 
   const handleConfirm = async () => {
     if (!ticketToMove) {
-      console.error("Error: ticketToMove is undefined!");
-      alert("Error: No ticket selected.");
-      return;
+        console.error("Error: ticketToMove is undefined!");
+        toast.error("Error: No ticket selected.");
+        return;
     }
-  
-    const { ticketId, fromStatus, columnId } = ticketToMove; // Get ticket details from state
-  
+
+    const { ticketId, fromStatus, columnId } = ticketToMove;
+
     if (!ticketId) {
-      console.error("Error: Ticket ID is missing!");
-      alert("Error: Ticket ID not found.");
-      return;
+        console.error("Error: Ticket ID is missing!");
+        toast.error("Error: Ticket ID not found.");
+        return;
     }
-  
+
     if (targetColumnTitle === "Closed" && !selectedRCA) {
-      alert("Please select an RCA before closing the ticket.");
-      return;
+        toast.warn("Please select an RCA before closing the ticket.");
+        return;
     }
-  
+
     const requestData = {
-      ticket_id: ticketId, // Use correct ticket ID
-      rca_id: selectedRCA,
-      move_date: selectedDate,
-      done_by: user?.name || "System",
+        ticket_id: ticketId,
+        rca_id: selectedRCA,
+        move_date: selectedDate,
+        done_by: user?.name || "System",
     };
-  
+
     try {
-      const response = await fetch(`${baseURL}Backend/updateTicketRca.php`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify(requestData),
-      });
-  
-      const text = await response.text();
-      try {
-        const result = JSON.parse(text);
-        if (result.success) {
-          alert("Ticket updated successfully!");
-          await updateStatus(ticketId, columnId);
-          await logTicketMovement(ticketId, fromStatus, columnId);
-          setTickets((prevTickets) =>
-            prevTickets.map((ticket) =>
-              ticket.id === ticketId ? { ...ticket, status: columnId } : ticket
-            )
-          );
-          fetchTickets(activeTypeId);
-        } else {
-          alert(`Error: ${result.error}`);
+        const response = await fetch(`${baseURL}Backend/updateTicketRca.php`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData),
+        });
+
+        const text = await response.text();
+        try {
+            const result = JSON.parse(text);
+            if (result.success) {
+                toast.success("Ticket RCA updated successfully.");
+                await updateStatus(ticketId, columnId);
+                await logTicketMovement(ticketId, fromStatus, columnId);
+                setTickets((prevTickets) =>
+                    prevTickets.map((ticket) =>
+                        ticket.id === ticketId ? { ...ticket, status: columnId } : ticket
+                    )
+                );
+                fetchTickets(activeTypeId);
+            } else {
+                toast.error(`Error: ${result.error}`);
+            }
+        } catch (jsonError) {
+            console.error("Invalid JSON response:", text);
+            toast.error("Error: Invalid server response. Check console.");
         }
-      } catch (jsonError) {
-        console.error("Invalid JSON response:", text);
-        alert("Error: Invalid server response. Check console.");
-      }
     } catch (error) {
-      console.error("Error updating ticket:", error);
+        console.error("Error updating ticket:", error);
+        toast.error("Error updating ticket. Try again.");
     }
-  
+
     setIsPopupOpen(false);
     setTicketToMove(null);
     setTargetColumnId(null);
-  };  
+};
 
   const updateStatus = async (itemId, newColumnId) => {
     try {
