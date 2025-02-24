@@ -26,23 +26,34 @@ if ($id && $value) {
         $placeholders = ['{firstname}', '{password}', '{username}'];
         $values = [$firstname, $password, $usernameD];
     } else if ($id == 2) {
-        $stmt = $conn->prepare("SELECT `contact_number` FROM `ticket` WHERE id = ?");
-        $stmt->bind_param("i", $value);
+        $stmt = $conn->prepare("SELECT `contact_number`, `customer_name` FROM `ticket` WHERE id = ?");
+        $stmt->bind_param("i", $value); 
         $stmt->execute();
-        $stmt->bind_result($wan);
+        $stmt->bind_result($wan, $cus_id);
         $stmt->fetch();
         $stmt->close();
 
-      
+        $mobileMapping = [
+            2 => '9025404289',
+            6 => '9025404289',
+            5 => '9025404232',
+            1 => '9025404205',
+            3 => '9025404205',
+            4 => '9025404205',
+        ];
 
+        $mob = $mobileMapping[$cus_id] ?? null; 
+      
         $placeholders = [
             '{tno}',
             '{wan}',
+            '{mob}',
         ];
 
         $values = [
             $value,
-            $wan,    
+            $wan, 
+            $mob,   
         ];
         $stmt = $conn->prepare("SELECT `contact_mail` FROM `ticket` WHERE id = ?");
         $stmt->bind_param("i", $value);

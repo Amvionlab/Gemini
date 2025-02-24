@@ -64,16 +64,7 @@ $sqlTickets = "SELECT
             user AS creator ON ticket.created_by = creator.id
         LEFT JOIN 
             user AS assignee ON FIND_IN_SET(assignee.id, ticket.assignees) > 0
-        LEFT JOIN 
-            (
-                SELECT 
-                    log.tid, 
-                    log.post_date AS closed_date
-                FROM 
-                    log
-                WHERE 
-                    log.to_status = 8
-            ) AS log ON log.tid = ticket.id
+       
         WHERE 
             $cond
         GROUP BY 

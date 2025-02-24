@@ -108,11 +108,18 @@ const Form = () => {
       }
     };  
 
-    const filteredCustomers = customers.filter(
-      (customer) =>
-        customer.gcl_region.toLowerCase().includes(searchTerm.toLowerCase()) ||
-        customer.a_end.toLowerCase().includes(searchTerm.toLowerCase())
-    );
+const filteredByCid = customers.filter(
+  (customer) => customer.cid === formData.customer_name
+);
+
+const filteredCustomers = filteredByCid.filter(
+  (customer) =>
+    customer.gcl_region.toLowerCase().includes(searchTerm.toLowerCase()) ||
+    customer.a_end.toLowerCase().includes(searchTerm.toLowerCase())
+);
+console.log("Filtered Customers:", filteredCustomers);
+    console.log("Selected Customer Name:", formData.customer_name);
+    
 
     useEffect(() => {
       const handleClickOutside = (event) => {
