@@ -65,7 +65,7 @@ $sqlTickets = "SELECT
         LEFT JOIN
             user AS assignee ON FIND_IN_SET(assignee.id, ticket.assignees) > 0
        
-        WHERE 
+        WHERE
             $cond
         GROUP BY
             ticket.id
