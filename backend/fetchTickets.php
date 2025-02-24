@@ -1,5 +1,5 @@
-<?php 
-include 'config.php'; 
+<?php
+include 'config.php';
 
 $cond = "1=1 AND ticket.status != 9";
 if (isset($_GET['user'])) {
@@ -12,7 +12,7 @@ if (isset($_GET['support'])) {
     $cond = "(FIND_IN_SET($id, ticket.assignees) OR ticket.created_by = $id)";
 }
 // Fetch tickets
-$sqlTickets = "SELECT 
+$sqlTickets = "SELECT
             ticket.*,
             ticket_type.type AS type,
             ticket_status.status AS status,
@@ -28,57 +28,48 @@ $sqlTickets = "SELECT
             GROUP_CONCAT(DISTINCT CONCAT(assignee.firstname, ' ', assignee.lastname) SEPARATOR ' & ') AS assignees,
             IFNULL(
                 (
-                    SELECT log.post_date 
-                    FROM log 
-                    WHERE log.tid = ticket.id 
-                    AND log.to_status = 4 
+                    SELECT log.post_date
+                    FROM log
+                    WHERE log.tid = ticket.id
+                    AND log.to_status = 4
                     ORDER BY log.id DESC
                     LIMIT 1
 
-                ), 
+                ),
                 ''
             ) AS closed_date
-        FROM 
+        FROM
             ticket
-        LEFT JOIN 
+        LEFT JOIN
             ticket_type ON ticket.ticket_type = ticket_type.id
-        LEFT JOIN 
+        LEFT JOIN
             ticket_noc ON ticket.nature_of_call = ticket_noc.id
-        LEFT JOIN 
+        LEFT JOIN
             ticket_service ON ticket.ticket_service = ticket_service.id
-        LEFT JOIN 
+        LEFT JOIN
             ticket_status ON ticket.status = ticket_status.id
-        LEFT JOIN 
+        LEFT JOIN
             domain ON ticket.domain = domain.id
-        LEFT JOIN 
+        LEFT JOIN
         client ON ticket.customer_name = client.id
-        LEFT JOIN 
+        LEFT JOIN
             location ON ticket.customer_location = location.id
-        LEFT JOIN 
+        LEFT JOIN
             department ON ticket.customer_department = department.id
-        LEFT JOIN 
+        LEFT JOIN
             sla ON ticket.sla_priority = sla.id
-        LEFT JOIN 
+        LEFT JOIN
             sub_domain ON ticket.sub_domain = sub_domain.id
-        LEFT JOIN 
+        LEFT JOIN
             user AS creator ON ticket.created_by = creator.id
-        LEFT JOIN 
+        LEFT JOIN
             user AS assignee ON FIND_IN_SET(assignee.id, ticket.assignees) > 0
-        LEFT JOIN 
-            (
-                SELECT 
-                    log.tid, 
-                    log.post_date AS closed_date
-                FROM 
-                    log
-                WHERE 
-                    log.to_status = 8
-            ) AS log ON log.tid = ticket.id
-        WHERE 
+       
+        WHERE
             $cond
-        GROUP BY 
+        GROUP BY
             ticket.id
-        ORDER BY 
+        ORDER BY
             ticket.id DESC";
 
 
@@ -94,4 +85,3 @@ if ($result->num_rows > 0) {
 } else {
   echo json_encode(array("message" => "No tickets found"));
 }
-

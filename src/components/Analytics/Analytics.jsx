@@ -36,7 +36,8 @@ function Reports() {
   const [selectedLabels, setSelectedLabels] = useState([[], [], [], [], []]);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  
+  const [exportcsvData, setExportCsvData] = useState([]);
+  const [customerDetails, setCustomerDetails] = useState([]);
   const [selectedDateFilter, setSelectedDateFilter] = useState("createdAt"); // Default: Created At
 
   const csvData = Array.isArray(filteredTickets)
@@ -57,6 +58,63 @@ function Reports() {
     }))
   : [];
 
+  useEffect(() => {
+    if (!Array.isArray(filteredTickets) || !Array.isArray(customerDetails)) return;
+  
+    const newCsvData = filteredTickets.map((ticket) => {
+      const customer = customerDetails.find(
+        (cust) => String(cust.id) === String(ticket.customer_location)
+      );
+  
+      return {
+        id: ticket.id,
+        type: ticket.type,
+        sla_priority: ticket.sla,
+        status: ticket.status,
+        ticket_service: ticket.service,
+        customer_department: ticket.department,
+        customer: ticket.customer,
+        customer_location: ticket.location,
+        customer_id: customer?.id || "", 
+        cid: customer?.cid || "",
+        gcl_unique_code: customer?.gcl_unique_code || "",
+        gcl_region: customer?.gcl_region || "",
+        branch_code: customer?.branch_code || "",
+        a_end: customer?.a_end || "",
+        b_end: customer?.b_end || "",
+        node: customer?.node || "",
+        modem_type: customer?.modem_type || "",
+        router_ip: customer?.router_ip || "",
+        primary_link: customer?.primary_link || "",
+        wan_ip: customer?.wan_ip || "",
+        circuit_id: customer?.circuit_id || "",
+        band_width: customer?.band_width || "",
+        location_type: customer?.location_type || "",
+        address: customer?.address || "",
+        contact_person: customer?.contact_person || "",
+        mobile: customer?.mobile || "",
+        commissioned_date: customer?.commissioned_date || "",
+        state_city: customer?.state_city || "",
+        email: customer?.email || "",
+        customer_sla: customer?.sla || "",
+        service_provider: customer?.service_provider || "",
+        is_active: customer?.is_active || "",
+        customer_post_date: customer?.post_date || "",
+        assignees: ticket.assignees,
+        domain: ticket.domain,
+        subdomain: ticket.subdomain,
+        created_by: ticket.name,
+        post_date: ticket.post_date,
+        closed_date: ticket.closed_date,
+      };
+    });
+  
+    setExportCsvData(newCsvData);
+  }, [filteredTickets, customerDetails]); // Re-run whenever these change
+
+  console.log("export csv", exportcsvData);
+
+
 
 
   const headers = [
@@ -74,6 +132,36 @@ function Reports() {
     { label: "Created At", key: "post_date" },  // Fix key
     { label: "Closed At", key: "closed_date" },  // Fix key
   ];
+
+  const customerHeaders = [
+    { label: "Customer ID", key: "id" },
+    { label: "CID", key: "cid" },
+    { label: "GCL Unique Code", key: "gcl_unique_code" },
+    { label: "GCL Region", key: "gcl_region" },
+    { label: "Branch Code", key: "branch_code" },
+    { label: "A End", key: "a_end" },
+    { label: "B End", key: "b_end" },
+    { label: "Node", key: "node" },
+    { label: "Modem Type", key: "modem_type" },
+    { label: "Router IP", key: "router_ip" },
+    { label: "Primary Link", key: "primary_link" },
+    { label: "WAN IP", key: "wan_ip" },
+    { label: "Circuit ID", key: "circuit_id" },
+    { label: "Bandwidth", key: "band_width" },
+    { label: "Location Type", key: "location_type" },
+    { label: "Address", key: "address" },
+    { label: "Contact Person", key: "contact_person" },
+    { label: "Mobile", key: "mobile" },
+    { label: "Commissioned Date", key: "commissioned_date" },
+    { label: "State/City", key: "state_city" },
+    { label: "Email", key: "email" },
+    { label: "SLA", key: "sla" },
+    { label: "Service Provider", key: "service_provider" },
+    { label: "Is Active", key: "is_active" },
+    { label: "Customer Post Date", key: "post_date" },
+    { label: "Total Duration", key: "total_duration" } // 🆕 New Column
+];
+
   
 
 const [age, setAge] = React.useState('');
@@ -124,6 +212,88 @@ const [age, setAge] = React.useState('');
     };
     fetchTickets();
   }, [user]);
+
+  useEffect(() => {
+    const fetchCustomerDetails = async () => {
+      try {
+        const response = await fetch(`${baseURL}backend/fetchCustomerDetails.php`);
+        const data = await response.json();
+        console.log("Fetched Customer Data:", data); // Debugging
+        setCustomerDetails(Array.isArray(data) ? data : []);
+      } catch (error) {
+        console.error("Error fetching customer details:", error);
+      }
+    };
+  
+    fetchCustomerDetails();
+  }, []);
+  
+  useEffect(() => {
+    if (!Array.isArray(filteredTickets) || !Array.isArray(customerDetails)) return;
+  
+    const newCsvData = filteredTickets.map((ticket) => {
+      const customer = customerDetails.find(
+        (cust) => String(cust.id) === String(ticket.customer_location)
+      );
+  
+      // 🕒 Calculate Total Duration in Minutes
+      const postDate = ticket.post_date ? new Date(ticket.post_date) : null;
+      const closedDate = ticket.closed_date ? new Date(ticket.closed_date) : null;
+      let totalDuration = "";
+  
+      if (postDate && closedDate) {
+        const diffMs = closedDate - postDate; // Difference in milliseconds
+        const diffMinutes = Math.floor(diffMs / (1000 * 60)); // Convert to total minutes
+        totalDuration = `${diffMinutes} mins`;
+      }
+  
+      return {
+        id: ticket.id,
+        type: ticket.type,
+        sla_priority: ticket.sla,
+        status: ticket.status,
+        ticket_service: ticket.service,
+        customer_department: ticket.department,
+        customer: ticket.customer,
+        customer_location: ticket.location,
+        customer_id: customer?.id || "", 
+        cid: customer?.cid || "",
+        gcl_unique_code: customer?.gcl_unique_code || "",
+        gcl_region: customer?.gcl_region || "",
+        branch_code: customer?.branch_code || "",
+        a_end: customer?.a_end || "",
+        b_end: customer?.b_end || "",
+        node: customer?.node || "",
+        modem_type: customer?.modem_type || "",
+        router_ip: customer?.router_ip || "",
+        primary_link: customer?.primary_link || "",
+        wan_ip: customer?.wan_ip || "",
+        circuit_id: customer?.circuit_id || "",
+        band_width: customer?.band_width || "",
+        location_type: customer?.location_type || "",
+        address: customer?.address || "",
+        contact_person: customer?.contact_person || "",
+        mobile: customer?.mobile || "",
+        commissioned_date: customer?.commissioned_date || "",
+        state_city: customer?.state_city || "",
+        email: customer?.email || "",
+        customer_sla: customer?.sla || "",
+        service_provider: customer?.service_provider || "",
+        is_active: customer?.is_active || "",
+        customer_post_date: customer?.post_date || "",
+        assignees: ticket.assignees,
+        domain: ticket.domain,
+        subdomain: ticket.subdomain,
+        created_by: ticket.name,
+        post_date: ticket.post_date,
+        closed_date: ticket.closed_date,
+        total_duration: totalDuration || "N/A" // ⏳ Now displayed in total minutes
+      };
+    });
+  
+    setExportCsvData(newCsvData);
+  }, [filteredTickets, customerDetails]); // Run when data changes
+  
 
   const handleFilterChange = (index) => (event) => {
     const {
@@ -312,7 +482,7 @@ const stableSort = (array, comparator) => {
                         [
                           " type",
                           "SLA",
-                         
+
                           " status",
                           " customer",
                           " assignees",
@@ -495,6 +665,17 @@ const stableSort = (array, comparator) => {
                 onRowsPerPageChange={handleRowsPerPageChange}
                 rowsPerPageOptions={[10, 25, 50, 100, 500]}
               />
+             <CSVLink
+  data={exportcsvData}
+  headers={customerHeaders} // Make sure to include customer headers
+  filename={"tickets_with_customers.csv"}
+  className="bg-box transform hover:scale-110 transition-transform duration-200 ease-in-out border-2 text-prime text-xs font-semibold py-1 px-3 rounded m-2"
+>
+  Export CSV
+</CSVLink>
+
+
+              
               <div className="flex gap-1">
                 <CSVLink
                   data={csvData}
