@@ -28,8 +28,8 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
     }
 
     $domainname = $_POST['name'];
-    $active="1";
-
+    $active="1";  
+    
 
     // Insert user data into 'users' table
     $sql = "INSERT INTO domain (name ,is_active) VALUES ('$domainname', '1')"; 
