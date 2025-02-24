@@ -1,4 +1,4 @@
-import React, { useContext, useEffect, useState } from "react";
+import React, { useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { CSVLink } from "react-csv";
 import { baseURL } from "../../config.js";
 import {
@@ -19,12 +19,8 @@ import {
   ListItemText,
 } from "@mui/material";
 import { UserContext } from "../UserContext/UserContext.jsx";
-import Chart from "react-google-charts";
 import { PieChart } from "@mui/x-charts";
 import InputLabel from '@mui/material/InputLabel';
-
-
-
 
 function Reports() {
   const [tickets, setTickets] = useState([]);
@@ -36,30 +32,12 @@ function Reports() {
   const [selectedLabels, setSelectedLabels] = useState([[], [], [], [], []]);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
-  
-  const [selectedDateFilter, setSelectedDateFilter] = useState("createdAt"); // Default: Created At
+  const [selectedDateFilter, setSelectedDateFilter] = useState("createdAt");
+  const [order, setOrder] = useState("asc");
+  const [orderBy, setOrderBy] = useState("");
 
-  const csvData = Array.isArray(filteredTickets)
-  ? filteredTickets.map((ticket) => ({
-      id: ticket.id,
-      type: ticket.type,
-      sla_priority: ticket.sla,  // Match header key
-      status: ticket.status,
-      ticket_service: ticket.service,  // Match header key
-      customer_department: ticket.department,  // Match header key
-      customer: ticket.customer,
-      assignees: ticket.assignees,
-      domain: ticket.domain,
-      subdomain: ticket.subdomain,
-      created_by: ticket.name,  // Match header key
-      post_date: ticket.post_date,  // Match header key
-      closed_date: ticket.closed_date,  // Match header key
-    }))
-  : [];
-
-
-
-  const headers = [
+  // Memoized headers for CSV export
+  const headers = useMemo(() => [
     { label: "Id", key: "id" },
     { label: "Type", key: "type" },
     { label: "SLA Priority", key: "sla_priority" },
@@ -68,56 +46,45 @@ function Reports() {
     { label: "Customer Department", key: "customer_department" },
     { label: "Customer", key: "customer" },
     { label: "Assignees", key: "assignees" },
-    { label: "Catagory", key: "domain" },
-    { label: "Sub Catagory", key: "subdomain" },
-    { label: "Created By", key: "name" },  // Fix key
-    { label: "Created At", key: "post_date" },  // Fix key
-    { label: "Closed At", key: "closed_date" },  // Fix key
-  ];
-  
+    { label: "Category", key: "domain" },
+    { label: "Sub Category", key: "subdomain" },
+    { label: "Created By", key: "name" },
+    { label: "Created At", key: "post_date" },
+    { label: "Closed At", key: "closed_date" },
+  ], []);
 
-const [age, setAge] = React.useState('');
+  // Memoized CSV data
+  const csvData = useMemo(() => filteredTickets.map((ticket) => ({
+    id: ticket.id,
+    type: ticket.type,
+    sla_priority: ticket.sla,
+    status: ticket.status,
+    ticket_service: ticket.service,
+    customer_department: ticket.department,
+    customer: ticket.customer,
+    assignees: ticket.assignees,
+    domain: ticket.domain,
+    subdomain: ticket.subdomain,
+    created_by: ticket.name,
+    post_date: ticket.post_date,
+    closed_date: ticket.closed_date,
+  })), [filteredTickets]);
 
-  const handleChange = (event) => {
-    setAge(event.target.value);
-  };
-
-
+  // Fetch tickets on user change
   useEffect(() => {
-    const today = new Date();
-    const todayStr = today.toISOString().split("T")[0]; // Correct today's date
-  
-    // First day of the current month (Fixed Time Zone Issue)
-    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
-    const firstDayStr = firstDayOfMonth.toLocaleDateString("en-CA"); // "YYYY-MM-DD" format
-  
-    setFromDate(firstDayStr);
-    setToDate(todayStr);
-  }, []);
-  
-
-  useEffect(() => {
-    const fetchTickets = async (value) => {
+    const fetchTickets = async () => {
       try {
         let response;
-        if (user && user.accessId === "2") {
-          response = await fetch(
-            `${baseURL}backend/fetchTickets.php?user=${user.userId}`
-          );
-        } else if (user && user.accessId === "5") {
-          response = await fetch(
-            `${baseURL}backend/fetchTickets.php?support=${user.userId}`
-          );
+        if (user?.accessId === "2") {
+          response = await fetch(`${baseURL}backend/fetchTickets.php?user=${user.userId}`);
+        } else if (user?.accessId === "5") {
+          response = await fetch(`${baseURL}backend/fetchTickets.php?support=${user.userId}`);
         } else {
           response = await fetch(`${baseURL}backend/fetchTickets.php`);
         }
         const data = await response.json();
-        if (Array.isArray(data)) {
-          setTickets(data);
-        } else {
-          setTickets([]); // Ensure tickets is always an array
-        }
-        setFilteredTickets(data);
+        setTickets(Array.isArray(data) ? data : []);
+        setFilteredTickets(Array.isArray(data) ? data : []);
       } catch (error) {
         console.error("Error fetching ticket data:", error);
       }
@@ -125,167 +92,110 @@ const [age, setAge] = React.useState('');
     fetchTickets();
   }, [user]);
 
-  const handleFilterChange = (index) => (event) => {
-    const {
-      target: { value },
-    } = event;
+  // Set default date range
+  useEffect(() => {
+    const today = new Date();
+    const todayStr = today.toISOString().split("T")[0];
+    const firstDayOfMonth = new Date(today.getFullYear(), today.getMonth(), 1);
+    const firstDayStr = firstDayOfMonth.toLocaleDateString("en-CA");
+    setFromDate(firstDayStr);
+    setToDate(todayStr);
+  }, []);
+
+  // Handle filter changes
+  const handleFilterChange = useCallback((index) => (event) => {
+    const value = event.target.value;
     const updatedLabels = [...selectedLabels];
     updatedLabels[index] = typeof value === "string" ? value.split(",") : value;
     setSelectedLabels(updatedLabels);
-    
+  }, [selectedLabels]);
 
-  };
-
-  // Improved groupDataByField function
-const groupDataByField = (field, data) => {
-  if (!Array.isArray(data)) {
-    console.warn("groupDataByField: Expected an array but received:", data);
-    return {};
-  }
-
-  const groupedData = {};
-  data.forEach((ticket) => {
-    const value = ticket?.[field] || "Empty";
-    groupedData[value] = (groupedData[value] || 0) + 1;
-  });
-
-  return groupedData;
-};
-
-
-
-  // Generate data for the selected filter based on filteredTickets
-  const domainData = groupDataByField(selectedFilter, filteredTickets);
-  // Ensure domainData is structured like { "Domain1": 10, "Domain2": 20 }
-  // Function to wrap labels
-  const wrapLabel = (label) => {
-    const words = label.split(" ");
-    return words.length > 100
-      ? words.slice(0, 1).join(" ") + "\n" + words.slice(1).join(" ")
-      : label;
-  };
-
-  const labelValue = Object.entries(domainData)
-
-    .slice(0, 10)
-    .map(([label]) => {
-      return wrapLabel(label.length > 15 ? label.slice(0, 10) + "..." : label);
+  // Group data by field
+  const groupDataByField = useCallback((field, data) => {
+    if (!Array.isArray(data)) return {};
+    const groupedData = {};
+    data.forEach((ticket) => {
+      const value = ticket?.[field] || "Empty";
+      groupedData[value] = (groupedData[value] || 0) + 1;
     });
+    return groupedData;
+  }, []);
 
-  const pieChartData = Object.entries(domainData)
-  .map(([label, value], index) => {
-    return {
-      label: labelValue[index],
-      value,
-    };
-  });
+  // Memoized domain data
+  const domainData = useMemo(() => groupDataByField(selectedFilter, filteredTickets), [selectedFilter, filteredTickets, groupDataByField]);
 
-  const pieChartOptions = {
-    legend: { textStyle: { fontSize: 12 } },
-    pieSliceText: "value",
-    title: ` Ticket Distribution by ${selectedFilter}`,
-    is3D: true,
-    pieSliceTextStyle: { fontSize: 20 },
-    titleTextStyle: { fontSize: 18, color: "#000" },
-  };
+  // Memoized pie chart data
+  const pieChartData = useMemo(() => Object.entries(domainData).map(([label, value]) => ({
+    label: label.length > 15 ? label.slice(0, 10) + "..." : label,
+    value,
+  })), [domainData]);
 
-
-
-  const handlePageChange = (event, newPage) => setPage(newPage);
-  const handleRowsPerPageChange = (event) => {
-    setTicketsPerPage(parseInt(event.target.value, 10));
-    setPage(0);
-  };
-  //ascending
-
-  const [order, setOrder] = useState("asc");
-  const [orderBy, setOrderBy] = useState("");
-
-  const handleRequestSort = (property) => {
+  // Handle sorting
+  const handleRequestSort = useCallback((property) => {
     const isAsc = orderBy === property && order === "asc";
     setOrder(isAsc ? "desc" : "asc");
     setOrderBy(property);
-  };
+  }, [order, orderBy]);
 
-  const getComparator = (order, orderBy) => {
-    return order === "desc"
-      ? (a, b) => descendingComparator(a, b, orderBy)
-      : (a, b) => -descendingComparator(a, b, orderBy);
-  };
+  // Memoized sorted tickets
+  const sortedTickets = useMemo(() => {
+    const comparator = (a, b) => {
+      if (a[orderBy] < b[orderBy]) return order === "asc" ? -1 : 1;
+      if (a[orderBy] > b[orderBy]) return order === "asc" ? 1 : -1;
+      return 0;
+    };
+    return [...filteredTickets].sort(comparator);
+  }, [filteredTickets, order, orderBy]);
 
-  const descendingComparator = (a, b, orderBy) => {
-    if (a[orderBy] < b[orderBy]) {
-      return -1;
-    }
-    if (a[orderBy] > b[orderBy]) {
-      return 1;
-    }
-    return 0;
-  };
-
-  // Improved stableSort function
-const stableSort = (array, comparator) => {
-  if (!Array.isArray(array)) {
-    console.warn("stableSort: Expected an array but received:", array);
-    return [];
-  }
-
-  const stabilizedThis = array.map((el, index) => [el, index]);
-  stabilizedThis.sort((a, b) => {
-    const order = comparator(a[0], b[0]);
-    if (order !== 0) return order;
-    return a[1] - b[1];
-  });
-
-  return stabilizedThis.map((el) => el[0]);
-};
-
-  const sortedTickets = stableSort(
-    filteredTickets,
-    getComparator(order, orderBy)
-  );
-
+  // Handle date and label filtering
   useEffect(() => {
     let filteredData = tickets;
-  
-    // Step 1: Filter by selected labels
+
+    // Filter by selected labels
     filteredData = filteredData.filter((ticket) =>
       selectedLabels.every((labels, index) => {
         const field = ["type", "SLA", "status", "customer", "assignees", "domain"][index];
-  
-        // Ensure the field exists and is a string before calling .toLowerCase()
-        const ticketValue = ticket[field] ? ticket[field].toString().toLowerCase() : "";  
-  
-        return labels.length === 0 || labels.some(label => 
-          ticketValue.includes(label.toLowerCase()) // Ensure label comparison works
-        );
+        const ticketValue = ticket[field] ? ticket[field].toString().toLowerCase() : "";
+        return labels.length === 0 || labels.some(label => ticketValue.includes(label.toLowerCase()));
       })
     );
-  
-    // Step 2: Filter by selected date type (Created At or Closed At)
+
+    // Filter by date range
     if (fromDate || toDate) {
       filteredData = filteredData.filter((ticket) => {
         const dateField = selectedDateFilter === "createdAt" ? ticket.post_date : ticket.closed_date;
-  
-        if (!dateField) return false; // Skip filtering if dateField is null/undefined
-  
-        const ticketDate = dateField.split(" ")[0]; // Extract only the date (YYYY-MM-DD)
+        if (!dateField) return false;
+        const ticketDate = dateField.split(" ")[0];
         const startDate = fromDate ? new Date(fromDate) : new Date("1900-01-01");
         const endDate = toDate ? new Date(toDate) : new Date("2100-01-01");
         const selectedDate = new Date(ticketDate);
-  
         return selectedDate >= startDate && selectedDate <= endDate;
       });
     }
-  
-    // Step 3: Update the state with filtered tickets
+
     setFilteredTickets(filteredData);
   }, [selectedLabels, tickets, fromDate, toDate, selectedDateFilter]);
   
-  
-  
+  const handlePageChange = useCallback((event, newPage) => {
+    setPage(newPage);
+  }, []);
 
+  const handleRowsPerPageChange = useCallback((event) => {
+    setTicketsPerPage(parseInt(event.target.value, 10)); // Update rows per page
+    setPage(0); // Reset to the first page
+  }, []);
+
+  const redirectToFetch = (tickets) => {
+    // Extract IDs and join them with commas
+    const ids = tickets.map(ticket => ticket.id).join(',');
   
+    // Construct the URL with query params
+    const url = `${baseURL}backend/fetchCustomerDetails.php?ids=${encodeURIComponent(ids)}`;
+  
+    // Use window.location.href to redirect
+    window.location.href = url;
+  };
+
   return (
     <div className="bg-second h-full overflow-hidden">
       <div className="m-0.5 p-1 h-[10%] bg-box w-full flex justify-center items-center">
@@ -357,8 +267,6 @@ const stableSort = (array, comparator) => {
           ))}
 
 
-
-   
 <FormControl sx={{ m: 1, minWidth: 120 }} size="small">
   <InputLabel id="date-filter-label">Filter By</InputLabel>
   <Select
@@ -373,47 +281,41 @@ const stableSort = (array, comparator) => {
   </Select>
 </FormControl>
 
+<div className="border-black border rounded-md p-1">
+  <p>From</p>
+  <input
+    type="date"
+    id="fromDate"
+    value={fromDate}
+    onChange={(e) => setFromDate(e.target.value)}
+    max={toDate}
+    className="outline-none border-none"
+  />
+</div>
 
 <div className="border-black border rounded-md p-1">
-      <p>From</p>
-      <input
-        type="date"
-        id="fromDate"
-        value={fromDate}
-        onChange={(e) => setFromDate(e.target.value)}
-        max={toDate} // Prevent selecting dates beyond "To Date"
-        className="outline-none border-none"
-      />
-    </div>
+  <p>To</p>
+  <input
+    type="date"
+    id="toDate"
+    value={toDate}
+    onChange={(e) => setToDate(e.target.value)}
+    min={fromDate}
+    className="outline-none border-none"
+  />
+</div>
 
-    <div className="border-black border rounded-md p-1">
-      <p>To</p>
-      <input
-        type="date"
-        id="toDate"
-        value={toDate}
-        onChange={(e) => setToDate(e.target.value)}
-        min={fromDate} // Prevent selecting dates before "From Date"
-        className="outline-none border-none"
-      />
-    </div>
-
-
-          <div
+<div
   className="font-semibold py-1 px-3 rounded border border-[red] text-red-600 hover:bg-red-600 hover:text-white cursor-pointer transition-all duration-150"
   onClick={() => {
-    setSelectedLabels([[], [], [], [], [], []]); // Clear selected labels
-    setFromDate(""); // Clear fromDate
-    setToDate(""); // Clear toDate
-    setSelectedDateFilter("createdAt"); // Reset filter to Created At
+    setSelectedLabels([[], [], [], [], [], []]);
+    setFromDate("");
+    setToDate("");
+    setSelectedDateFilter("createdAt");
   }}
 >
   <p className="text-xs">Clear All</p>
 </div>
-
-
-
-     
 
         </div>
       </div>
@@ -441,7 +343,7 @@ const stableSort = (array, comparator) => {
             <PieChart
               series={[
                 {
-                  data: pieChartData, // Pass the correctly formatted data
+                  data: pieChartData,
                   innerRadius: 50,
                   outerRadius: 150,
                   highlightScope: { faded: "global", highlighted: "item" },
@@ -456,7 +358,7 @@ const stableSort = (array, comparator) => {
                       options: {
                         labels: {
                           font: {
-                            size: 10, // Set the desired font size for the legend here
+                            size: 10,
                           },
                         },
                       },
@@ -504,101 +406,97 @@ const stableSort = (array, comparator) => {
                 >
                   CSV
                 </CSVLink>
+                <button
+  className="bg-box border transform hover:scale-110 transition-transform duration-200 ease-in-out text-prime text-xs font-semibold py-1 px-3 rounded m-2"
+  onClick={() => redirectToFetch(sortedTickets)}
+>
+  Report
+</button>
               </div>
             </div>
             <TableContainer sx={{ maxHeight: "calc(100vh - 200px)" }}>
               <Table stickyHeader>
-              <TableHead>
-  <TableRow>
-    {headers.map(({ label, key }, index) => (
-      <TableCell
-        key={index}
-        align="left"
-        sx={{
-          whiteSpace: "nowrap",
-          fontWeight: "300",
-          fontSize: "14px",
-          padding: "1px 3px",
-          backgroundColor: "#004080",
-          color: "white",
-        }}
-      >
-        <TableSortLabel
-          active={orderBy === key}
-          direction={orderBy === key ? order : "asc"}
-          onClick={() => handleRequestSort(key)}
-          sx={{
-            "&.Mui-active": { color: "white" },
-            "&:hover": { color: "white" },
-            "& .MuiTableSortLabel-icon": {
-              color: "white !important",
-            },
-          }}
-        >
-          {label}
-        </TableSortLabel>
-      </TableCell>
-    ))}
-  </TableRow>
-</TableHead>
+                <TableHead>
+                  <TableRow>
+                    {headers.map(({ label, key }, index) => (
+                      <TableCell
+                        key={index}
+                        align="left"
+                        sx={{
+                          whiteSpace: "nowrap",
+                          fontWeight: "300",
+                          fontSize: "14px",
+                          padding: "1px 3px",
+                          backgroundColor: "#004080",
+                          color: "white",
+                        }}
+                      >
+                        <TableSortLabel
+                          active={orderBy === key}
+                          direction={orderBy === key ? order : "asc"}
+                          onClick={() => handleRequestSort(key)}
+                          sx={{
+                            "&.Mui-active": { color: "white" },
+                            "&:hover": { color: "white" },
+                            "& .MuiTableSortLabel-icon": {
+                              color: "white !important",
+                            },
+                          }}
+                        >
+                          {label}
+                        </TableSortLabel>
+                      </TableCell>
+                    ))}
+                  </TableRow>
+                </TableHead>
+                <TableBody className="py-10">
+                  {sortedTickets.length === 0 ? (
+                    <TableRow hover>
+                      <TableCell
+                        colSpan={headers.length}
+                        sx={{
+                          padding: "1px 3px",
+                          fontSize: "10px",
+                          textAlign: "center",
+                        }}
+                      >
+                        No tickets available
+                      </TableCell>
+                    </TableRow>
+                  ) : (
+                    sortedTickets
+                      .slice(page * ticketsPerPage, page * ticketsPerPage + ticketsPerPage)
+                      .map((ticket) => (
+                        <TableRow key={ticket.id} hover>
+                          {headers.map(({ key }, idx) => {
+                            const value = ticket[key];
 
-<TableBody className="py-10">
-  {sortedTickets.length === 0 ? (
-    <TableRow hover>
-      <TableCell
-        colSpan={headers.length}
-        sx={{
-          padding: "1px 3px",
-          fontSize: "10px",
-          textAlign: "center",
-        }}
-      >
-        No tickets available
-      </TableCell>
-    </TableRow>
-  ) : (
-    sortedTickets
-      .slice(page * ticketsPerPage, page * ticketsPerPage + ticketsPerPage)
-      .map((ticket) => (
-        <TableRow key={ticket.id} hover>
-          {headers.map(({ key, label }, idx) => {
-            const value = ticket[key]; // Fetching data dynamically
-
-            return (
-              <TableCell
-                key={idx}
-                align="center"
-                sx={{
-                  padding: "1px 3px",
-                  fontSize: "11px",
-                  whiteSpace: "nowrap",
-                  overflow: "hidden",
-                  textOverflow: "ellipsis",
-                  cursor: "pointer",
-                  "&:hover": {
-                    whiteSpace: "normal",
-                    backgroundColor: "#f5f5f5",
-                    
-                  },
-                }}
-                title={value || "N/A"} // Tooltip to show full text
-              >
-                {label === "Assignees"
-                  ? (value?.split(" ").slice(0, 3).join(" ") || "N/A") +
-                    (value?.split(" ").length > 3 ? "..." : "")
-                  : label === "Customer"
-                  ? (value?.split(" ").slice(0, 3).join(" ") || "N/A") +
-                    (value?.split(" ").length > 3 ? "..." : "")
-                  : value || "N/A"} {/* If value is empty, show "N/A" */}
-              </TableCell>
-            );
-          })}
-        </TableRow>
-      ))
-  )}
-</TableBody>
-
-
+                            return (
+                              <TableCell
+                                key={idx}
+                                align="center"
+                                sx={{
+                                  padding: "1px 3px",
+                                  fontSize: "11px",
+                                  whiteSpace: "nowrap",
+                                  overflow: "hidden",
+                                  textOverflow: "ellipsis",
+                                  cursor: "pointer",
+                                  "&:hover": {
+                                    whiteSpace: "normal",
+                                    backgroundColor: "#f5f5f5",
+                                  },
+                                }}
+                                title={value || "N/A"}
+                              >
+                                {value || "N/A"}
+                              </TableCell>
+                            );
+                          })}
+                        </TableRow>
+                      ))
+                  )}
+                </TableBody>
               </Table>
             </TableContainer>
           </Paper>
