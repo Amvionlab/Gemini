@@ -76,3 +76,8 @@
 2025-02-24 12:55:12 - Ticket inserted successfully, ID: 11
 2025-02-24 12:55:15 - Log inserted successfully
 2025-02-24 12:55:15 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-02-25 06:19:18 - Script started
+2025-02-25 06:19:18 - Preparing SQL statement
+2025-02-25 06:19:18 - Ticket inserted successfully, ID: 9
+2025-02-25 06:19:22 - Log inserted successfully
+2025-02-25 06:19:22 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}

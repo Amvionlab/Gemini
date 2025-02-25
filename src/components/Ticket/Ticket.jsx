@@ -388,13 +388,12 @@ const filteredCustomers = filteredByCid.filter(
                  />
             <div className="flex items-center mb-3 mr-4">
         <label className="text-sm font-semibold text-prime mr-2 w-32">
-        Catagory <span className="text-red-600 text-md font-bold">*</span>
+        Catagory
         </label>
         <select
           name="domain"
           value={formData.domain}
           onChange={handleChange}
-          required
           className="flex-grow text-xs bg-box border p-1.5  rounded outline-none focus:border-flo focus:ring-flo max-w-72"
         >
           <option value="" className="custom-option">
