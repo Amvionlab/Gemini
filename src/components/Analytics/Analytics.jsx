@@ -40,9 +40,8 @@ function Reports() {
   const headers = useMemo(() => [
     { label: "Id", key: "id" },
     { label: "Type", key: "type" },
-    { label: "SLA Priority", key: "sla_priority" },
     { label: "Status", key: "status" },
-    { label: "Ticket Service", key: "ticket_service" },
+    { label: "Ticket Service", key: "service" },
     { label: "Customer Department", key: "customer_department" },
     { label: "Customer", key: "customer" },
     { label: "Assignees", key: "assignees" },
@@ -221,8 +220,6 @@ function Reports() {
                       {
                         [
                           " type",
-                          "SLA",
-                         
                           " status",
                           " customer",
                           " assignees",
@@ -328,7 +325,7 @@ function Reports() {
                 <div
                   key={index}
                   onClick={() => setSelectedFilter(item.toLowerCase())}
-                  className={`py-1 px-2 text-xs font-semibold rounded cursor-pointer ${
+                  className={`py-1 px-2 text-xs font-semibold rounded cursor-pointer mt-10 ${
                     item.toLowerCase() === selectedFilter
                       ? "bg-flo text-white"
                       : "bg-box text-black border border-black"
@@ -398,14 +395,7 @@ function Reports() {
                 rowsPerPageOptions={[10, 25, 50, 100, 500]}
               />
               <div className="flex gap-1">
-                <CSVLink
-                  data={csvData}
-                  headers={headers}
-                  filename={"tickets.csv"}
-                  className="bg-box transform hover:scale-110 transition-transform duration-200 ease-in-out border-2 text-prime text-xs font-semibold py-1 px-3 rounded m-2"
-                >
-                  CSV
-                </CSVLink>
+               
                 <button
   className="bg-box border transform hover:scale-110 transition-transform duration-200 ease-in-out text-prime text-xs font-semibold py-1 px-3 rounded m-2"
   onClick={() => redirectToFetch(sortedTickets)}
