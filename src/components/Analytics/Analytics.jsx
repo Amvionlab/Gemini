@@ -46,11 +46,19 @@ function Reports() {
     { label: "Customer", key: "customer" },
     { label: "Assignees", key: "assignees" },
     { label: "Category", key: "domain" },
-    { label: "Sub Category", key: "subdomain" },
+    { label: "Sub Domain", key: "Sub_Domain" },
     { label: "Created By", key: "name" },
     { label: "Created At", key: "post_date" },
     { label: "Closed At", key: "closed_date" },
   ], []);
+
+  const pieheader = [
+    { label: "Type", key: "type" },
+    { label: "Status", key: "status" },
+    { label: "Customer", key: "customer" },
+    { label: "Sub Domain", key: "subdomain" },
+    { label: "Domain", key: "domain" }
+  ];
 
   // Memoized CSV data
   const csvData = useMemo(() => filteredTickets.map((ticket) => ({
@@ -150,14 +158,17 @@ function Reports() {
   useEffect(() => {
     let filteredData = tickets;
 
-    // Filter by selected labels
     filteredData = filteredData.filter((ticket) =>
       selectedLabels.every((labels, index) => {
-        const field = ["type", "SLA", "status", "customer", "assignees", "domain"][index];
-        const ticketValue = ticket[field] ? ticket[field].toString().toLowerCase() : "";
-        return labels.length === 0 || labels.some(label => ticketValue.includes(label.toLowerCase()));
+        if (labels.length === 0) return true; // No filter applied for this category
+    
+        const field = ["type", "status", "customer", "subdomain", "domain"][index]; // Removed SLA, as it wasn’t mapped correctly
+        const ticketValue = ticket[field] ? ticket[field].toString().trim().toLowerCase() : "";
+    
+        return labels.some(label => ticketValue === label.toLowerCase()); // Ensures exact match
       })
     );
+    
 
     // Filter by date range
     if (fromDate || toDate) {
@@ -222,7 +233,7 @@ function Reports() {
                           " type",
                           " status",
                           " customer",
-                          " assignees",
+                          " subdomain",
                           " domain",
                         ][index]
                       }
@@ -240,7 +251,7 @@ function Reports() {
               >
                 {Object.entries(
                   groupDataByField(
-                    ["type", "status", "customer", "assignees", "domain"][
+                    ["type", "status", "customer", "subdomain", "domain"][
                       index
                     ],
                     tickets
@@ -320,21 +331,19 @@ function Reports() {
       <div className="main flex h-[90%] gap-0.5">
         <div className="section1 md:flex-col  w-[40%] bg-box rounded-md h-full">
           <div className="flex justify-center items-center gap-5 w-full p-2">
-            {["Type","Status", "Customer", "Assignees", "Domain"].map(
-              (item, index) => (
-                <div
-                  key={index}
-                  onClick={() => setSelectedFilter(item.toLowerCase())}
-                  className={`py-1 px-2 text-xs font-semibold rounded cursor-pointer mt-10 ${
-                    item.toLowerCase() === selectedFilter
-                      ? "bg-flo text-white"
-                      : "bg-box text-black border border-black"
-                  }`}
-                >
-                  <p>{item}</p>
-                </div>
-              )
-            )}
+          {pieheader.map(({ label, key }, index) => (
+  <div
+    key={index}
+    onClick={() => setSelectedFilter(key)}
+    className={`py-1 px-2 text-xs font-semibold rounded cursor-pointer mt-10 ${
+      key === selectedFilter
+        ? "bg-flo text-white"
+        : "bg-box text-black border border-black"
+    }`}
+  >
+    <p>{label}</p>
+  </div>
+))}
           </div>
           <div className="w-full flex-col justify-start items-center h-full rounded-md flex mb-2">
             <PieChart
