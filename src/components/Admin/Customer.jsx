@@ -136,7 +136,7 @@ const Form = () => {
     e.preventDefault();
   
     const form = new FormData();
-  
+   
     Object.keys(formData).forEach((key) => {
       form.append(key, formData[key]);
     });
@@ -150,9 +150,9 @@ const Form = () => {
         method: "POST",
         body: form,
       });
-  
+      console.log("form", form)
       const result = await response.json();
-      console.log("Response Status:", response.status);
+      
       console.log("Response Body:", result);
   
       if (!response.ok) {
@@ -164,7 +164,7 @@ const Form = () => {
   
       // ✅ Reset form fields
       setFormData({
-        name: "",
+        client_id: "",
         gclunicode: "",
         gclreg: "",
         branchcode: "",

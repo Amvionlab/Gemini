@@ -60,7 +60,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
             cid, gcl_unique_code, gcl_region, branch_code, 
             a_end, b_end, node, modem_type, router_ip, primary_link, 
             wan_ip, circuit_id, band_width, location_type, address, 
-            contact_number, mobile_number, commissioned_date, state_city, email_id, 
+            contact_person, mobile, commissioned_date, state_city, email, 
             sla, service_provider, is_active, post_date
         ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
         
