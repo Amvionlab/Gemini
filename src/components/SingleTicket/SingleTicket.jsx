@@ -75,7 +75,7 @@ const SingleTicket = () => {
   const { user } = useContext(UserContext);
   const [open, setOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState(null);
-
+  const [selectedRCA, setSelectedRCA] = useState("");
   const [users, setUsers] = useState([]);
   const [filteredUsers, setFilteredUsers] = useState([]);
   const [users2, setUsers2] = useState([]);
@@ -83,6 +83,7 @@ const SingleTicket = () => {
   const [selectedVendors, setSelectedVendors] = useState([]);
   const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
   const [vendors, setVendors] = useState([]);
+  const [rcaList, setRcaList] = useState([]);
 
 // Add missing functions
 const handleVendorModalClose = () => setIsVendorModalOpen(false);
@@ -143,6 +144,21 @@ useEffect(() => {
     })
     .catch((error) => console.error("Error fetching selected vendors:", error));
 }, [ticketId, baseURL]);
+
+useEffect(() => {
+  const fetchRCAList = async () => {
+      try {
+          const response = await fetch(`${baseURL}backend/fetchRca.php`);
+          const data = await response.json();
+          setRcaList(data);
+      } catch (error) {
+          console.error("Error fetching RCA data:", error);
+          toast.error("Error fetching RCA list.");
+      }
+  };
+
+  fetchRCAList();
+}, []);
 
   const [filters, setFilters] = useState({});
   const [showFilter, setShowFilter] = useState({
@@ -920,37 +936,79 @@ useEffect(() => {
   const handleConfirm = async () => {
     const newStatus = statuses[selectedStep]?.id;
     const oldStatus = ticketData?.status;
+    console.log("s",statuses[selectedStep]?.id)
+    const isClosingTicket = statuses[selectedStep]?.id === '4'; 
+    console.log("ct",isClosingTicket)
+    if (isClosingTicket && !selectedRCA) {
+        toast.warning("Please select an RCA before closing the ticket.");
+        return;
+    }
 
     try {
-      // Update ticket status
-      const response = await fetch(`${baseURL}backend/update_sstatus.php`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({ id: id, status: newStatus }),
-      });
-      if (!response.ok) {
-        throw new Error("Failed to update status");
-      }
-      const data = await response.json();
-      toast.success(data.message);
+        // ✅ Step 1: Update Ticket Status
+        const response = await fetch(`${baseURL}backend/update_sstatus.php`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ id: id, status: newStatus }),
+        });
 
-      // Log the status change
-      await logStatusChange(oldStatus, newStatus);
+        if (!response.ok) {
+            throw new Error("Failed to update status");
+        }
 
-      // Update local state after successful status update
-      setTicketData((prevTicketData) => ({
-        ...prevTicketData,
-        status: newStatus,
-      }));
-      setCurrentStep(selectedStep);
-      setOpen(false);
-      fetchTicket();
+        const data = await response.json();
+        toast.success(data.message);
+
+        // ✅ Step 2: Log the Status Change
+        await logStatusChange(oldStatus, newStatus);
+
+        // ✅ Step 3: If Closing, Update RCA ID
+        if (isClosingTicket) {
+            const requestData = {
+                ticket_id: id,  // Ensure correct ticket ID
+                rca_id: selectedRCA,
+                move_date: selectedDate,
+                done_by: user?.name || "System",
+            };
+            console.log("rd",requestData)
+            const updateResponse = await fetch(`${baseURL}Backend/updateTicketRca.php`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(requestData),
+            });
+
+            const updateText = await updateResponse.text();
+            let updateResult;
+
+            try {
+                updateResult = JSON.parse(updateText);
+            } catch (jsonError) {
+                console.error("Invalid JSON response:", updateText);
+                toast.error("Error: Invalid server response. Check console.");
+                return;
+            }
+
+            if (updateResult.success) {
+                toast.success("Ticket RCA updated successfully.");
+            } else {
+                toast.error(`Error updating RCA: ${updateResult.error}`);
+                return;
+            }
+        }
+
+        // ✅ Step 4: Update Local State After Successful Operations
+        setTicketData((prevTicketData) => ({
+            ...prevTicketData,
+            status: newStatus,
+        }));
+        setCurrentStep(selectedStep);
+        setOpen(false);
+        fetchTicket(); // Refresh ticket data
+
     } catch (error) {
-      toast.error(`Error updating status: ${error.message}`);
+        toast.error(`Error updating status: ${error.message}`);
     }
-  };
+};
 
   if (!ticketData || statuses.length === 0) {
     return <div className="flex justify-center items-center">Loading...</div>;
@@ -961,16 +1019,16 @@ useEffect(() => {
     { label: "Location", value: ticketData.customer_location },
     { label: "Department", value: ticketData.customer_department },
     { label: "Contact Person", value: ticketData.contact_person },
-    { label: "WAN IP", value: ticketData.contact_number },
+    { label: "Contact No", value: ticketData.contact_number },
     { label: "Email", value: ticketData.contact_mail },
   ];
 
   const ticketDetails = [
     { label: "Type of Ticket", value: ticketData.ticket_type_value },
-    { label: "Ticket NOC", value: ticketData.ticket_noc_value },
+    { label: "Scheduled Date", value: ticketData.scheduled_date },
     { label: "Type of Service", value: ticketData.ticket_service_value },
-    { label: "Catagory", value: ticketData.ticket_domain_value },
-    { label: "Sub Catagory", value: ticketData.ticket_subdomain_value },
+    { label: "Domain", value: ticketData.ticket_domain_value },
+    { label: "Sub Domain", value: ticketData.ticket_subdomain_value },
     { label: "SLA Level", value: ticketData.ticket_sla_value },
   ];
 
@@ -1773,46 +1831,62 @@ useEffect(() => {
           )}
         </div>
       </div>
-      <Dialog
-        open={open}
-        onClose={() => setOpen(false)}
-        aria-labelledby="alert-dialog-title"
-        aria-describedby="alert-dialog-description"
-      >
-        <DialogTitle id="alert-dialog-title">
-          {"Change Ticket Status"}
-        </DialogTitle>
-        <DialogContent>
-  <DialogContentText id="alert-dialog-description">
-    Are you sure you want to change the ticket status to{" "}
-    {status[selectedStep]?.subName}?
-  </DialogContentText>
-<br></br>
+      <Dialog open={open} onClose={() => setOpen(false)} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
+            <DialogTitle id="alert-dialog-title">{"Change Ticket Status"}</DialogTitle>
+            <DialogContent>
+                <DialogContentText id="alert-dialog-description">
+                    Are you sure you want to change the ticket status to{" "}
+                    {status[selectedStep]?.subName}?
+                </DialogContentText>
+                <br />
 
-    <TextField
-      label="Select Date"
-      type="datetime-local"
-      fullWidth
-      margin="dense"
-      required
-      InputLabelProps={{ shrink: true }}
-      value={selectedDate}
-      onChange={(e) => setSelectedDate(e.target.value)}
-    />
-  
-</DialogContent>
-        <DialogActions>
-          <Button onClick={() => setOpen(false)}>Cancel</Button>
-          <Button
-          onClick={handleConfirm}
-          autoFocus
-          disabled={status[selectedStep]?.subName === "Scheduled" && !selectedDate}
-        >
-         Confirm
-        </Button>
-          
-        </DialogActions>
-      </Dialog>
+                {/* Date Picker (Always Shown) */}
+                <TextField
+                    label="Select Date"
+                    type="datetime-local"
+                    fullWidth
+                    margin="dense"
+                    required
+                    InputLabelProps={{ shrink: true }}
+                    value={selectedDate}
+                    onChange={(e) => setSelectedDate(e.target.value)}
+                />
+
+                {/* RCA Dropdown (Only show when status is 'Closed') */}
+                {status[selectedStep]?.subName === "Closed" && (
+                    <TextField
+                        select
+                        label="Select RCA"
+                        fullWidth
+                        margin="dense"
+                        required
+                        value={selectedRCA}
+                        onChange={(e) => setSelectedRCA(e.target.value)}
+                    >
+                        <MenuItem value="">Select RCA</MenuItem>
+                        {rcaList.map((rca) => (
+                            <MenuItem key={rca.id} value={rca.id}>
+                                {rca.name}
+                            </MenuItem>
+                        ))}
+                    </TextField>
+                )}
+            </DialogContent>
+
+            <DialogActions>
+                <Button onClick={() => setOpen(false)}>Cancel</Button>
+                <Button
+                    onClick={handleConfirm}
+                    autoFocus
+                    disabled={
+                        (status[selectedStep]?.subName === "Scheduled" && !selectedDate) ||
+                        (status[selectedStep]?.subName === "Closed" && !selectedRCA)
+                    }
+                >
+                    Confirm
+                </Button>
+            </DialogActions>
+        </Dialog>
     </div>
   );
 };
