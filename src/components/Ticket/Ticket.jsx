@@ -297,7 +297,7 @@ const filteredCustomers = filteredByCid.filter(
                 className="p-2 cursor-pointer hover:bg-gray-200 text-xs"
                 onClick={() => handleSelect(customer)}
               >
-                {customer.gcl_region} - {customer.a_end}
+                {customer.gcl_region} - {customer.node} - {customer.a_end}
               </li>
             ))}
           </ul>

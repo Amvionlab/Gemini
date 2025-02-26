@@ -1016,7 +1016,7 @@ useEffect(() => {
 
   const customerDetails = [
     { label: "Name", value: ticketData.ticket_customer_value },
-    { label: "Location", value: ticketData.customer_location },
+    { label: "Location", value: ticketData.customer_branch },
     { label: "Unique Code", value: ticketData.customer_department },
     { label: "Contact Person", value: ticketData.contact_person },
     { label: "WAN IP", value: ticketData.contact_number },

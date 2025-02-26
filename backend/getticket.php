@@ -7,6 +7,7 @@ if (isset($_GET['id'])) {
     $query = "
         SELECT 
             ticket.*,
+            CONCAT(customer.gcl_region,'-',customer.node, '-',customer.a_end) AS customer_branch,
             ticket_type.type AS ticket_type_value,
             ticket_status.status AS ticket_status_name,
             ticket_noc.name AS ticket_noc_value,
@@ -40,6 +41,8 @@ if (isset($_GET['id'])) {
             department ON ticket.customer_department = department.id
             LEFT JOIN 
             sla ON ticket.sla_priority = sla.id
+            LEFT JOIN 
+            customer ON ticket.customer_location = customer.id
             LEFT JOIN 
             user ON ticket.created_by = user.id
             LEFT JOIN 
