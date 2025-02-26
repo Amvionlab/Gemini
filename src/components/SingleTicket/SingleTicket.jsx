@@ -1037,9 +1037,9 @@ useEffect(() => {
   };
 
   return (
-    <div className="bg-second font-sui h-full overflow-hidden p-1">
+    <div className="bg-second font-sui h-full overflow-hidden p-0.5">
       {user && user.ticketaction === "1" && (
-        <div className=" progress-container w-full bg-box  h-[15%] py-14 mb-1 ">
+        <div className=" progress-container w-full bg-box  h-[15%] py-14 mb-0.5">
           <div className="bar bg-second ">
             <div
               className="bar__fill bg-flo"
@@ -1064,7 +1064,7 @@ useEffect(() => {
       )}
 
       {/* <div className="progress-container w-full mb-3 pt-5 bg-box font-poppins shadow-md"></div> */}
-      <div className="overflow-y-scroll h-[85%]">
+      <div className="overflow-y-scroll h-[100%]">
         <div className="w-full mx-auto bg-box ">
           <div className="py-2 px-10 flex justify-between items-center bg-white rounded-t-lg shadow-sm">
             <div className="flex items-center gap-2 text-prime font-bold">
@@ -1475,7 +1475,7 @@ useEffect(() => {
           </div>
         )}
 
-        <div className="max-w-full w-full mt-2 bg-box p-3 rounded text-xs">
+        <div className="max-w-full w-full bg-box p-3 -mt-0.5 rounded text-xs">
           <div className="flex justify-center space-x-4 mb-4">
             <button
               onClick={() => setShowTimesheet(true)}
