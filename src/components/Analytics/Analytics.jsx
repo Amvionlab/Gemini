@@ -41,12 +41,13 @@ function Reports() {
     { label: "Id", key: "id" },
     { label: "Type", key: "type" },
     { label: "Status", key: "status" },
+    { label: "RCA", key: "rca" },
     { label: "Ticket Service", key: "service" },
     { label: "Customer Department", key: "customer_department" },
     { label: "Customer", key: "customer" },
     { label: "Assignees", key: "assignees" },
     { label: "Category", key: "domain" },
-    { label: "Sub Domain", key: "Sub_Domain" },
+    { label: "Sub Category", key: "subdomain" },
     { label: "Created By", key: "name" },
     { label: "Created At", key: "post_date" },
     { label: "Closed At", key: "closed_date" },
@@ -56,8 +57,9 @@ function Reports() {
     { label: "Type", key: "type" },
     { label: "Status", key: "status" },
     { label: "Customer", key: "customer" },
-    { label: "Sub Domain", key: "subdomain" },
-    { label: "Domain", key: "domain" }
+    { label: "Category", key: "domain" },
+    { label: "Sub Category", key: "subdomain" }
+    
   ];
 
   // Memoized CSV data
@@ -162,7 +164,7 @@ function Reports() {
       selectedLabels.every((labels, index) => {
         if (labels.length === 0) return true; // No filter applied for this category
     
-        const field = ["type", "status", "customer", "subdomain", "domain"][index]; // Removed SLA, as it wasn’t mapped correctly
+        const field = ["type", "status", "customer","domain", "subdomain" ][index]; // Removed SLA, as it wasn’t mapped correctly
         const ticketValue = ticket[field] ? ticket[field].toString().trim().toLowerCase() : "";
     
         return labels.some(label => ticketValue === label.toLowerCase()); // Ensures exact match
@@ -233,8 +235,9 @@ function Reports() {
                           " type",
                           " status",
                           " customer",
-                          " subdomain",
-                          " domain",
+                          " category",
+                          " subcategory"
+                          
                         ][index]
                       }
                     </span>
@@ -251,7 +254,7 @@ function Reports() {
               >
                 {Object.entries(
                   groupDataByField(
-                    ["type", "status", "customer", "subdomain", "domain"][
+                    ["type", "status", "customer", "domain", "subdomain"][
                       index
                     ],
                     tickets
