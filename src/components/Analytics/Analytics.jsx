@@ -41,12 +41,13 @@ function Reports() {
     { label: "Id", key: "id" },
     { label: "Type", key: "type" },
     { label: "Status", key: "status" },
+    { label: "RCA", key: "rca" },
     { label: "Ticket Service", key: "service" },
     { label: "Customer Department", key: "customer_department" },
     { label: "Customer", key: "customer" },
     { label: "Assignees", key: "assignees" },
     { label: "Category", key: "domain" },
-    { label: "Sub Domain", key: "Sub_Domain" },
+    { label: "Sub Category", key: "Sub_Domain" },
     { label: "Created By", key: "name" },
     { label: "Created At", key: "post_date" },
     { label: "Closed At", key: "closed_date" },
@@ -56,8 +57,8 @@ function Reports() {
     { label: "Type", key: "type" },
     { label: "Status", key: "status" },
     { label: "Customer", key: "customer" },
-    { label: "Sub Domain", key: "subdomain" },
-    { label: "Domain", key: "domain" }
+    { label: "Sub Category", key: "subdomain" },
+    { label: "Category", key: "domain" }
   ];
 
   // Memoized CSV data
@@ -233,7 +234,7 @@ function Reports() {
                           " type",
                           " status",
                           " customer",
-                          " subdomain",
+                          " subcategory",
                           " domain",
                         ][index]
                       }
