@@ -90,7 +90,7 @@ if (isset($_GET['ids'])) {
             FROM 
                 ticket
             JOIN
-                customer
+                customer ON ticket.customer_location = customer.id
             LEFT JOIN 
                 ticket_type ON ticket.ticket_type = ticket_type.id
             LEFT JOIN 
