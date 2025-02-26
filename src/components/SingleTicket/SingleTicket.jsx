@@ -1017,19 +1017,19 @@ useEffect(() => {
   const customerDetails = [
     { label: "Name", value: ticketData.ticket_customer_value },
     { label: "Location", value: ticketData.customer_location },
-    { label: "Department", value: ticketData.customer_department },
+    { label: "Unique Code", value: ticketData.customer_department },
     { label: "Contact Person", value: ticketData.contact_person },
-    { label: "Contact No", value: ticketData.contact_number },
+    { label: "WAN IP", value: ticketData.contact_number },
     { label: "Email", value: ticketData.contact_mail },
   ];
 
   const ticketDetails = [
     { label: "Type of Ticket", value: ticketData.ticket_type_value },
-    { label: "Scheduled Date", value: ticketData.scheduled_date },
+    { label: "Nature of Call", value: ticketData.ticket_noc_value },
     { label: "Type of Service", value: ticketData.ticket_service_value },
-    { label: "Domain", value: ticketData.ticket_domain_value },
-    { label: "Sub Domain", value: ticketData.ticket_subdomain_value },
-    { label: "SLA Level", value: ticketData.ticket_sla_value },
+    { label: "Catagory", value: ticketData.ticket_domain_value },
+    { label: "Sub Catagory", value: ticketData.ticket_subdomain_value },
+    { label: "RCA", value: ticketData.rca },
   ];
 
   const handleButtonClick = () => {
@@ -1037,9 +1037,9 @@ useEffect(() => {
   };
 
   return (
-    <div className="bg-second font-sui h-full overflow-hidden p-1">
+    <div className="bg-second font-sui h-full overflow-hidden p-0.5">
       {user && user.ticketaction === "1" && (
-        <div className=" progress-container w-full bg-box  h-[15%] py-14 mb-1 ">
+        <div className=" progress-container w-full bg-box  h-[15%] py-14 mb-0.5">
           <div className="bar bg-second ">
             <div
               className="bar__fill bg-flo"
@@ -1064,12 +1064,12 @@ useEffect(() => {
       )}
 
       {/* <div className="progress-container w-full mb-3 pt-5 bg-box font-poppins shadow-md"></div> */}
-      <div className="overflow-y-scroll h-[85%]">
+      <div className="overflow-y-scroll h-[100%]">
         <div className="w-full mx-auto bg-box ">
           <div className="py-2 px-10 flex justify-between items-center bg-white rounded-t-lg shadow-sm">
             <div className="flex items-center gap-2 text-prime font-bold">
-              <HiTicket className="text-flo text-4xl" />
-              <span className="text-base"> #{ticketData.id}</span>
+              <HiTicket className="text-flo w-24 text-4xl" />
+              <span className="text-base text-flo"> #{ticketData.id}</span>
 
               <CustomTooltip
                 title={
@@ -1087,15 +1087,15 @@ useEffect(() => {
                 }
               >
                 <span
-                  className="w-full whitespace-nowrap overflow-hidden overflow-ellipsis"
+                  className="w-full min-w-96 whitespace-nowrap overflow-hidden overflow-ellipsis"
                   title={ticketData.issue_nature}
                 >
                   {" "}
                   - {ticketData.issue_nature}
                 </span>
               </CustomTooltip>
-              <span className="text-xs font-bold ml-4 text-nowrap">
-                {ticketData.post_date}
+              <span className="text-sm text-right font-bold ml-4 text-nowrap">
+                Raised On : {ticketData.post_date}
               </span>
             </div>
 
@@ -1147,8 +1147,8 @@ useEffect(() => {
                 <h2 className="text-lg font-semibold mb-3 text-gray-900">
                   Customer Details
                 </h2>
-                <div className="overflow-x-auto  rounded-lg p-2 ">
-                  <table className="min-w-full divide-y divide-gray-200">
+                <div className="overflow-x-auto  rounded-lg p-3">
+                  <table className="min-w-full divide-y divide-gray-200 ">
                     <tbody>
                       {customerDetails.map((detail, index) => (
                         <tr key={index}>
@@ -1475,7 +1475,7 @@ useEffect(() => {
           </div>
         )}
 
-        <div className="max-w-full w-full mt-2 bg-box p-3 rounded text-xs">
+        <div className="max-w-full w-full bg-box p-3 -mt-0.5 rounded text-xs">
           <div className="flex justify-center space-x-4 mb-4">
             <button
               onClick={() => setShowTimesheet(true)}

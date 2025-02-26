@@ -17,105 +17,6 @@ if (isset($_GET['ids'])) {
         // Prepare SQL by injecting the list of IDs
         $idsPlaceholder = implode(',', $ids);
 
-<<<<<<< HEAD
-        $sqlTickets = "SELECT 
-        ticket.id,
-        ticket_type.type AS type,
-        ticket_status.status AS status,
-        ticket_noc.name AS nature_of_call,
-        ticket_service.name AS service,
-        domain.name AS domain,
-        client.name AS customer,
-        location.name AS location,
-        sla.level AS sla,
-        CONCAT(creator.firstname, ' ', creator.lastname) AS name,
-        department.name AS department,
-        sub_domain.name AS subdomain,
-        GROUP_CONCAT(DISTINCT CONCAT(assignee.firstname, ' ', assignee.lastname) SEPARATOR ' & ') AS assignees,
-        ticket.post_date AS post_date, 
-        IFNULL(
-            (
-                SELECT log.post_date 
-                FROM log 
-                WHERE log.tid = ticket.id 
-                AND log.to_status = 4 
-                ORDER BY log.id DESC
-                LIMIT 1
-            ), 
-            ''
-        ) AS closed_date,
-        TIMESTAMPDIFF(DAY, ticket.post_date, 
-            IFNULL(
-                (SELECT log.post_date 
-                 FROM log 
-                 WHERE log.tid = ticket.id 
-                 AND log.to_status = 4 
-                 ORDER BY log.id DESC 
-                 LIMIT 1), 
-                NOW()
-            )
-        ) AS duration,
-        customer.id AS id,
-        customer.cid,
-        customer.gcl_unique_code,
-        customer.gcl_region,
-        customer.branch_code,
-        customer.a_end,
-        customer.b_end,
-        customer.node,
-        customer.modem_type,
-        customer.router_ip,
-        customer.primary_link,
-        customer.wan_ip,
-        customer.circuit_id,
-        customer.band_width,
-        customer.location_type,
-        customer.address,
-        customer.contact_person,
-        customer.mobile,
-        customer.commissioned_date,
-        customer.state_city,
-        customer.email,
-        customer.sla AS customer_sla,
-        customer.service_provider,
-        customer.is_active,
-        customer.post_date AS customer_post_date
-    FROM 
-        ticket
-    JOIN
-        customer
-    LEFT JOIN 
-        ticket_type ON ticket.ticket_type = ticket_type.id
-    LEFT JOIN 
-        ticket_noc ON ticket.nature_of_call = ticket_noc.id
-    LEFT JOIN 
-        ticket_service ON ticket.ticket_service = ticket_service.id
-    LEFT JOIN 
-        ticket_status ON ticket.status = ticket_status.id
-    LEFT JOIN 
-        domain ON ticket.domain = domain.id
-    LEFT JOIN 
-        client ON ticket.customer_name = client.id
-    LEFT JOIN 
-        location ON ticket.customer_location = location.id
-    LEFT JOIN 
-        department ON ticket.customer_department = department.id
-    LEFT JOIN 
-        sla ON ticket.sla_priority = sla.id
-    LEFT JOIN 
-        sub_domain ON ticket.sub_domain = sub_domain.id
-    LEFT JOIN 
-        user AS creator ON ticket.created_by = creator.id
-    LEFT JOIN 
-        user AS assignee ON FIND_IN_SET(assignee.id, ticket.assignees) > 0
-    WHERE 
-        ticket.id IN ($idsPlaceholder)
-    GROUP BY 
-        ticket.id
-    ORDER BY 
-        ticket.id DESC";
-
-=======
         $sqlTickets = "
             SELECT 
                 ticket.id,
@@ -222,19 +123,11 @@ if (isset($_GET['ids'])) {
                 ticket.id
             ORDER BY 
                 ticket.id DESC";
->>>>>>> 6eacd5b60119a16cded908b677b090a237c52716
 
         $result = $conn->query($sqlTickets);
         if ($result->num_rows > 0) {
             $output = fopen('php://output', 'w');
-<<<<<<< HEAD
-            // Write the headers (ensure headers align with your expected data fields)
-            // Write the headers
-fputcsv($output, ['ID', 'Type', 'Status', 'Nature of Call', 'Service', 'Domain', 'Customer', 'Location', 'SLA', 'Name', 'Department', 'Subdomain', 'Assignees', 'Post Date', 'Closed Date', 'Duration', 'Customer ID', 'CID', 'Unique Code', 'Region', 'Branch Code', 'A End', 'B End', 'Node', 'Modem Type', 'Router IP', 'Primary Link', 'WAN IP', 'Circuit ID', 'Bandwidth', 'Location Type', 'Address', 'Contact Person', 'Mobile', 'Commissioned Date', 'State/City', 'Email', 'Customer SLA', 'Service Provider', 'Is Active', 'Customer Post Date']);
-
-=======
-            fputcsv($output, ['Ticket ID', 'Customer', 'Type', 'Status', 'Nature of Call', 'Service', 'Domain', 'Subdomain', 'Assignees', 'Created By', 'Created On', 'Closed On', 'Time Taken', 'Unique Code', 'Region', 'Branch Code', 'A End', 'B End', 'Node', 'Modem Type', 'Router IP', 'Primary Link', 'WAN IP', 'Circuit ID', 'Bandwidth', 'Location Type', 'Address', 'Contact Person', 'Mobile', 'Commissioned Date', 'State/City', 'Email', 'Customer SLA', 'Service Provider', 'Timesheet', 'Logs']);
->>>>>>> 6eacd5b60119a16cded908b677b090a237c52716
+            fputcsv($output, ['Ticket ID', 'Customer', 'Type', 'Status', 'Nature of Call', 'Service', 'Domain', 'Subdomain', 'RCA', 'Assignees', 'Created By', 'Created On', 'Closed On', 'Time Taken', 'Unique Code', 'Region', 'Branch Code', 'A End', 'B End', 'Node', 'Modem Type', 'Router IP', 'Primary Link', 'WAN IP', 'Circuit ID', 'Bandwidth', 'Location Type', 'Address', 'Contact Person', 'Mobile', 'Commissioned Date', 'State/City', 'Email', 'Customer SLA', 'Service Provider', 'Timesheet', 'Logs']);
 
             // Write each row as CSV
             while ($row = $result->fetch_assoc()) {
@@ -289,7 +182,7 @@ fputcsv($output, ['ID', 'Type', 'Status', 'Nature of Call', 'Service', 'Domain',
                 $csvRow = [
                     $row['id'], $row['customer'], $row['type'], $row['status'], 
                     $row['nature_of_call'], $row['service'], $row['domain'], 
-                    $row['subdomain'], $row['assignees'], $row['name'], 
+                    $row['subdomain'], $row['rca'], $row['assignees'], $row['name'], 
                     $row['opened_by'], $row['closed_date'], $row['time_taken'], 
                     $row['gcl_unique_code'], $row['gcl_region'], 
                     $row['branch_code'], $row['a_end'], $row['b_end'], 

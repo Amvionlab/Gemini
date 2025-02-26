@@ -15,6 +15,7 @@ if (isset($_GET['id'])) {
             client.name AS ticket_customer_value,
             location.name AS ticket_location_value,
             sla.level AS ticket_sla_value,
+            rca.name AS rca,
             department.name AS ticket_department_value,
             CONCAT(user.firstname, ' ', user.lastname) AS cname,
             sub_domain.name AS ticket_subdomain_value
@@ -34,7 +35,7 @@ if (isset($_GET['id'])) {
             LEFT JOIN 
             client ON ticket.customer_name = client.id
             LEFT JOIN 
-            location ON ticket.customer_location = location.id
+                location ON ticket.customer_location = location.id
             LEFT JOIN 
             department ON ticket.customer_department = department.id
             LEFT JOIN 
@@ -42,7 +43,9 @@ if (isset($_GET['id'])) {
             LEFT JOIN 
             user ON ticket.created_by = user.id
             LEFT JOIN 
-            sub_domain ON ticket.sub_domain = sub_domain.id    
+            sub_domain ON ticket.sub_domain = sub_domain.id 
+            LEFT JOIN 
+                rca ON ticket.rca_id = rca.id   
          WHERE 
             ticket.id = ?";
     
