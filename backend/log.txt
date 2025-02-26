@@ -81,3 +81,23 @@
 2025-02-25 06:19:18 - Ticket inserted successfully, ID: 9
 2025-02-25 06:19:22 - Log inserted successfully
 2025-02-25 06:19:22 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-02-25 13:32:00 - Script started
+2025-02-25 13:32:00 - Preparing SQL statement
+2025-02-25 13:32:00 - Ticket inserted successfully, ID: 10
+2025-02-25 13:32:05 - Log inserted successfully
+2025-02-25 13:32:05 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-02-25 13:35:38 - Script started
+2025-02-25 13:35:38 - Preparing SQL statement
+2025-02-25 13:35:38 - Ticket inserted successfully, ID: 11
+2025-02-25 13:35:38 - Log inserted successfully
+2025-02-25 13:35:38 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-02-25 13:39:36 - Script started
+2025-02-25 13:39:36 - Preparing SQL statement
+2025-02-25 13:39:36 - Ticket inserted successfully, ID: 12
+2025-02-25 13:39:39 - Log inserted successfully
+2025-02-25 13:39:39 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-02-25 13:40:05 - Script started
+2025-02-25 13:40:05 - Preparing SQL statement
+2025-02-25 13:40:05 - Ticket inserted successfully, ID: 13
+2025-02-25 13:40:07 - Log inserted successfully
+2025-02-25 13:40:07 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}

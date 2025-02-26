@@ -22,6 +22,7 @@ $sqlTickets = "SELECT
             client.name AS customer,
             location.name AS location,
             sla.level AS sla,
+            rca.name AS rca,
             CONCAT(creator.firstname, ' ', creator.lastname) AS name,
             department.name AS department,
             sub_domain.name AS subdomain,
@@ -58,6 +59,8 @@ $sqlTickets = "SELECT
             department ON ticket.customer_department = department.id
         LEFT JOIN
             sla ON ticket.sla_priority = sla.id
+        LEFT JOIN 
+            rca ON ticket.rca_id = rca.id
         LEFT JOIN
             sub_domain ON ticket.sub_domain = sub_domain.id
         LEFT JOIN
