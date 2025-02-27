@@ -385,11 +385,12 @@ const App = () => {
                             >
                               {ticket.ticket_customer_value}
                             </p>
-                            {ticket.scheduled_date && (
+                            
+                           
                               <p className="truncate" title={ticket.scheduled_date}>
-                                Visit on {ticket.scheduled_date}
+                                {ticket.customer_branch}
                               </p>
-                            )}
+                           
                           </div>
                           <div className="rounded-md pr-1 w-6 h-6 min-w-6 flex items-center justify-center">
                             <span className="font-semibold">#{ticket.id}</span>
