@@ -331,12 +331,12 @@ const App = () => {
           </h1>
         </div>
 
-        <div>
+        <div className="ml-10">
         
         <input
           type="text"
           id="branchFilter"
-          className="border rounded p-2 w-80 mt-1"
+          className="border-2 border-flo rounded p-1 w-40 text-xs mt-1"
           placeholder="Search branch..."
           value={search}
           onChange={(e) => setSearch(e.target.value)}
@@ -345,7 +345,7 @@ const App = () => {
         />
 
         {showDropdown && (
-          <ul className="absolute left-72 w-80 bg-white border rounded shadow-md max-h-40 overflow-y-auto mt-1 z-10">
+          <ul className="absolute left-80 w-80 bg-white border rounded-md shadow-lg max-h-80 text-xs text-prime font-semibold overflow-y-auto mt-1 z-10">
             <li
               className="p-2 hover:bg-gray-100 cursor-pointer"
               onMouseDown={() => {
@@ -376,9 +376,6 @@ const App = () => {
         )}
         </div>
 
-        <div>
-          
-        </div>
         <div className="m-2 flex-row-reverse header-right items-center">
           
           <div className="ml-4">
