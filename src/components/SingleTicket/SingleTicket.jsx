@@ -59,7 +59,7 @@ const SingleTicket = () => {
   ))({
     [`& .${tooltipClasses.tooltip}`]: {
       maxWidth: 900,
-      backgroundColor: "black",
+      backgroundColor: "purple",
     },
   });
   const id = ticketId;
@@ -1074,11 +1074,7 @@ useEffect(() => {
               <CustomTooltip
                 title={
                   <div
-                    style={{
-                      height: "350px",
-                      width: "900px",
-                      overflowY: "auto",
-                    }}
+                    
                     className="p-4"
                   >
                     {/* Example content */}

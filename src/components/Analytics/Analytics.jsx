@@ -1,6 +1,7 @@
 import React, { useContext, useEffect, useState, useMemo, useCallback } from "react";
 import { CSVLink } from "react-csv";
 import { baseURL } from "../../config.js";
+import { useNavigate } from "react-router-dom";
 import {
   Table,
   TableHead,
@@ -18,6 +19,7 @@ import {
   Checkbox,
   ListItemText,
 } from "@mui/material";
+import { useTicketContext } from "../UserContext/TicketContext";
 import { UserContext } from "../UserContext/UserContext.jsx";
 import { PieChart } from "@mui/x-charts";
 import InputLabel from '@mui/material/InputLabel';
@@ -26,12 +28,14 @@ function Reports() {
   const [tickets, setTickets] = useState([]);
   const { user } = useContext(UserContext);
   const [page, setPage] = useState(0);
+  const navigate = useNavigate();
   const [ticketsPerPage, setTicketsPerPage] = useState(50);
   const [filteredTickets, setFilteredTickets] = useState([]);
   const [selectedFilter, setSelectedFilter] = useState("type");
-  const [selectedLabels, setSelectedLabels] = useState([[], [], [], [], []]);
+  const [selectedLabels, setSelectedLabels] = useState([[], [], [], [], [], []]);
   const [fromDate, setFromDate] = useState("");
   const [toDate, setToDate] = useState("");
+  const { setTicketId } = useTicketContext();
   const [selectedDateFilter, setSelectedDateFilter] = useState("createdAt");
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("");
@@ -58,8 +62,8 @@ function Reports() {
     { label: "Status", key: "status" },
     { label: "Customer", key: "customer" },
     { label: "Category", key: "domain" },
-    { label: "Sub Category", key: "subdomain" }
-    
+    { label: "Sub Category", key: "subdomain" },
+   
   ];
 
   // Memoized CSV data
@@ -156,6 +160,11 @@ function Reports() {
     return [...filteredTickets].sort(comparator);
   }, [filteredTickets, order, orderBy]);
 
+  const handleViewTicket = (ticketId) => {
+    setTicketId(ticketId);
+    navigate("/singleticket");
+  };
+
   // Handle date and label filtering
   useEffect(() => {
     let filteredData = tickets;
@@ -164,7 +173,7 @@ function Reports() {
       selectedLabels.every((labels, index) => {
         if (labels.length === 0) return true; // No filter applied for this category
     
-        const field = ["type", "status", "customer","domain", "subdomain" ][index]; // Removed SLA, as it wasn’t mapped correctly
+        const field = ["type", "status", "customer","domain", "subdomain", "customer_branch" ][index]; // Removed SLA, as it wasn’t mapped correctly
         const ticketValue = ticket[field] ? ticket[field].toString().trim().toLowerCase() : "";
     
         return labels.some(label => ticketValue === label.toLowerCase()); // Ensures exact match
@@ -211,10 +220,10 @@ function Reports() {
   return (
     <div className="bg-second h-full overflow-hidden">
       <div className="m-0.5 p-1 h-[10%] bg-box w-full flex justify-center items-center">
-        <div className="flex justify-center items-center text-xs w-full gap-4 ">
+        <div className="flex justify-center items-center text-xs w-full gap-1 ">
           <p className="font-semibold text-sm w-16">Filter :</p>
           {selectedLabels.map((selectedLabel, index) => (
-            <FormControl key={index} sx={{ m: 0.5, width: 125, height: 30 }}>
+            <FormControl key={index} sx={{ m: 0.5, width: 130, height: 30 }}>
               <Select
                 multiple
                 className="border w-28"
@@ -236,8 +245,8 @@ function Reports() {
                           " status",
                           " customer",
                           " category",
-                          " subcategory"
-                          
+                          " subcategory",
+                          " Branch"
                         ][index]
                       }
                     </span>
@@ -254,7 +263,7 @@ function Reports() {
               >
                 {Object.entries(
                   groupDataByField(
-                    ["type", "status", "customer", "domain", "subdomain"][
+                    ["type", "status", "customer", "domain", "subdomain", "customer_branch"][
                       index
                     ],
                     tickets
@@ -278,13 +287,13 @@ function Reports() {
           ))}
 
 
-<FormControl sx={{ m: 1, minWidth: 120 }} size="small">
-  <InputLabel id="date-filter-label">Filter By</InputLabel>
+<FormControl sx={{ m: 0.5, minWidth: 100 }} size="small">
+  <InputLabel id="date-filter-label">Filter</InputLabel>
   <Select
     labelId="date-filter-label"
     id="date-filter"
     value={selectedDateFilter}
-    label="Filter By"
+    label="Filter"
     onChange={(e) => setSelectedDateFilter(e.target.value)}
   >
     <MenuItem value="createdAt">Created At</MenuItem>
@@ -292,40 +301,40 @@ function Reports() {
   </Select>
 </FormControl>
 
-<div className="border-black border rounded-md p-1">
-  <p>From</p>
+<div className="border-black border rounded p-0.5 text-xs">
+  <p style={{ margin: 0 }}>From</p>
   <input
     type="date"
     id="fromDate"
     value={fromDate}
     onChange={(e) => setFromDate(e.target.value)}
     max={toDate}
-    className="outline-none border-none"
+    className="outline-none border-none text-xs w-full"
   />
 </div>
 
-<div className="border-black border rounded-md p-1">
-  <p>To</p>
+<div className="border-black border rounded p-0.5 text-xs">
+  <p style={{ margin: 0 }}>To</p>
   <input
     type="date"
     id="toDate"
     value={toDate}
     onChange={(e) => setToDate(e.target.value)}
     min={fromDate}
-    className="outline-none border-none"
+    className="outline-none border-none text-xs w-full"
   />
 </div>
 
 <div
-  className="font-semibold py-1 px-3 rounded border border-[red] text-red-600 hover:bg-red-600 hover:text-white cursor-pointer transition-all duration-150"
+  className="font-semibold py-1 px-2 rounded border border-[red] text-red-600 hover:bg-red-600 hover:text-white cursor-pointer transition-all duration-150"
   onClick={() => {
-    setSelectedLabels([[], [], [], [], [], []]);
+    setSelectedLabels([[], [], [], [], [], [], []]);
     setFromDate("");
     setToDate("");
     setSelectedDateFilter("createdAt");
   }}
 >
-  <p className="text-xs">Clear All</p>
+  <p className="text-xs">Clear</p>
 </div>
 
         </div>
@@ -469,7 +478,7 @@ function Reports() {
                     sortedTickets
                       .slice(page * ticketsPerPage, page * ticketsPerPage + ticketsPerPage)
                       .map((ticket) => (
-                        <TableRow key={ticket.id} hover>
+                        <TableRow key={ticket.id} hover onClick={() => handleViewTicket(ticket.id)}>
                           {headers.map(({ key }, idx) => {
                             const value = ticket[key];
 

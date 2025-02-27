@@ -26,10 +26,25 @@ if ($id && $value) {
         $placeholders = ['{firstname}', '{password}', '{username}'];
         $values = [$firstname, $password, $usernameD];
     } else if ($id == 2) {
-        $stmt = $conn->prepare("SELECT `contact_number`, `customer_name` FROM `ticket` WHERE id = ?");
+        $stmt = $conn->prepare("SELECT `contact_number`, `customer_name`, `customer_location` FROM `ticket` WHERE id = ?");
         $stmt->bind_param("i", $value); 
         $stmt->execute();
-        $stmt->bind_result($wan, $cus_id);
+        $stmt->bind_result($wan, $cus_id, $cusl_id);
+        $stmt->fetch();
+        $stmt->close();
+
+
+        $stmt = $conn->prepare("SELECT `name` FROM `client` WHERE  id= ?");
+        $stmt->bind_param("i", $cus_id);
+        $stmt->execute();
+        $stmt->bind_result($customer);
+        $stmt->fetch();
+        $stmt->close();
+
+        $stmt = $conn->prepare("SELECT `gcl_region`,`a_end` FROM `customer` WHERE  id= ?");
+        $stmt->bind_param("i", $cusl_id);
+        $stmt->execute();
+        $stmt->bind_result($customer_region, $customer_end);
         $stmt->fetch();
         $stmt->close();
 
@@ -48,12 +63,19 @@ if ($id && $value) {
             '{tno}',
             '{wan}',
             '{mob}',
+            '{c1}',
+            '{c2}',
+            '{c3}',
         ];
 
         $values = [
             $value,
             $wan, 
-            $mob,   
+            $mob,  
+            $customer,
+            $customer_region,
+            $customer_end,
+
         ];
         $stmt = $conn->prepare("SELECT `contact_mail` FROM `ticket` WHERE id = ?");
         $stmt->bind_param("i", $value);
