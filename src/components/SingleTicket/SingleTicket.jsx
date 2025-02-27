@@ -3,7 +3,7 @@ import { Link, useNavigate, useParams } from "react-router-dom";
 import moment from "moment";
 import { toast } from "react-toastify";
 import { baseURL, backendPort } from "../../config.js";
-import { FaFilter, FaUserPlus } from "react-icons/fa";
+import { FaFilter, FaUserPlus,FaEdit, FaCheck, FaTimes} from "react-icons/fa";
 import { MdSupervisedUserCircle } from "react-icons/md";
 import { FaCircleUser } from "react-icons/fa6";
 import { HiTicket } from "react-icons/hi2";
@@ -84,6 +84,7 @@ const SingleTicket = () => {
   const [isVendorModalOpen, setIsVendorModalOpen] = useState(false);
   const [vendors, setVendors] = useState([]);
   const [rcaList, setRcaList] = useState([]);
+  const [isEditing, setIsEditing] = useState(false);
 
 // Add missing functions
 const handleVendorModalClose = () => setIsVendorModalOpen(false);
@@ -91,6 +92,13 @@ const handleVendorSelectChange = (selectedOptions) => {
   setSelectedVendors(selectedOptions);
   updateVendorInDB(ticketId, selectedOptions.map((v) => v.value));
 };
+
+function formatDate(dateString) {
+  if (!dateString) return ""; // Handle missing date
+  const date = new Date(dateString);
+  return date.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM"
+}
+
 const handleVendorChipRemove = (vendorToRemove) => {
   const updatedVendors = selectedVendors.filter((v) => v.value !== vendorToRemove.value);
   setSelectedVendors(updatedVendors);
@@ -110,6 +118,32 @@ const updateVendorInDB = async (ticketId, vendorIds) => {
     console.log(`Vendors updated successfully for Ticket ID ${ticketId}`);
   } catch (error) {
     console.error("Error updating vendors:", error);
+  }
+};
+const handleSave = async () => {
+  if (!selectedDate) {
+    toast.error("Please select a valid date.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${baseURL}backend/updateTicket.php`, {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({
+        ticket_id: ticketData.id,
+        post_date: selectedDate,
+      }),
+    });
+
+    if (!response.ok) throw new Error("Failed to update ticket");
+
+    toast.success("Ticket date updated successfully!");
+    fetchTicket();
+    setIsEditing(false);
+  } catch (error) {
+    console.error("Error updating ticket:", error);
+    toast.error("Update failed!");
   }
 };
 
@@ -1067,34 +1101,52 @@ useEffect(() => {
       <div className="overflow-y-scroll h-[100%]">
         <div className="w-full mx-auto bg-box ">
           <div className="py-2 px-10 flex justify-between items-center bg-white rounded-t-lg shadow-sm">
-            <div className="flex items-center gap-2 text-prime font-bold">
-              <HiTicket className="text-flo w-24 text-4xl" />
-              <span className="text-base text-flo"> #{ticketData.id}</span>
+          <div className="flex items-center gap-2 text-prime font-bold">
+      <HiTicket className="text-flo w-24 text-4xl" />
+      <span className="text-base text-flo"> #{ticketData.id}</span>
 
-              <CustomTooltip
-                title={
-                  <div
-                    
-                    className="p-4"
-                  >
-                    {/* Example content */}
-                    <pre className="text-wrap">{ticketData.issue_nature}</pre>
-                  </div>
-                }
-              >
-                <span
-                  className="w-full min-w-96 whitespace-nowrap overflow-hidden overflow-ellipsis"
-                  title={ticketData.issue_nature}
-                >
-                  {" "}
-                  - {ticketData.issue_nature}
-                </span>
-              </CustomTooltip>
-              <span className="text-sm text-right font-bold ml-4 text-nowrap">
-                Raised On : {ticketData.post_date}
-              </span>
-            </div>
+      <CustomTooltip
+        title={
+          <div className="p-4">
+            <pre className="text-wrap">{ticketData.issue_nature}</pre>
+          </div>
+        }
+      >
+        <span
+          className="w-full min-w-96 whitespace-nowrap overflow-hidden overflow-ellipsis"
+          title={ticketData.issue_nature}
+        >
+          {" "}
+          - {ticketData.issue_nature}
+        </span>
+      </CustomTooltip>
 
+      {isEditing ? (
+        <>
+          <input
+            type="datetime-local"
+            value={selectedDate}
+            onChange={(e) => setSelectedDate(e.target.value)}
+            className="border rounded px-2 py-1 text-sm"
+          />
+          <button onClick={handleSave} className="text-green-500 ml-2">
+            <FaCheck />
+          </button>
+          <button onClick={() => setIsEditing(false)} className="text-red-500 ml-2">
+            <FaTimes />
+          </button>
+        </>
+      ) : (
+        <>
+          <span className="text-sm text-right font-bold ml-4 text-nowrap">
+            Raised On : {ticketData.post_date}
+          </span>
+          <button onClick={() => setIsEditing(true)} className="ml-2 text-blue-500">
+            <FaEdit />
+          </button>
+        </>
+      )}
+    </div>
             {ticketData.path && ticketData.path !== "" && (
               <div className="flex items-center gap-2 ml-auto">
                 <a
