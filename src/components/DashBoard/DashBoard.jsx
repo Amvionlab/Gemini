@@ -316,8 +316,18 @@ const App = () => {
             Welcome {user.firstname}!
           </h1>
         </div>
+
+        <div>
+          
+        </div>
         <div className="m-2 flex-row-reverse header-right items-center">
+          
           <div className="ml-4">
+          <div>
+            <select name="" id="">
+         
+            </select>
+          </div>
             {ticketTypes.map((type) => (
               <Button
                 key={type.id}

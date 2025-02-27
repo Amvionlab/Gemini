@@ -39,6 +39,7 @@ function Reports() {
   const [selectedDateFilter, setSelectedDateFilter] = useState("createdAt");
   const [order, setOrder] = useState("asc");
   const [orderBy, setOrderBy] = useState("");
+  const [searchTerm, setSearchTerm] = useState(Array(selectedLabels.length).fill(""));
 
   // Memoized headers for CSV export
   const headers = useMemo(() => [
@@ -115,24 +116,32 @@ function Reports() {
     setToDate(todayStr);
   }, []);
 
-  // Handle filter changes
-  const handleFilterChange = useCallback((index) => (event) => {
-    const value = event.target.value;
-    const updatedLabels = [...selectedLabels];
-    updatedLabels[index] = typeof value === "string" ? value.split(",") : value;
-    setSelectedLabels(updatedLabels);
-  }, [selectedLabels]);
+  const handleFilterChange = (index) => (event) => {
+    const {
+      target: { value },
+    } = event;
+  
+    const updatedSelectedLabels = [...selectedLabels];
+    updatedSelectedLabels[index] = typeof value === "string" ? value.split(",") : value;
+    setSelectedLabels(updatedSelectedLabels);
+  
+    // Apply filtering to table & pie chart data
+    updateFilteredData(updatedSelectedLabels);
+  };
+  
 
   // Group data by field
   const groupDataByField = useCallback((field, data) => {
     if (!Array.isArray(data)) return {};
     const groupedData = {};
     data.forEach((ticket) => {
-      const value = ticket?.[field] || "Empty";
-      groupedData[value] = (groupedData[value] || 0) + 1;
+      const value = ticket?.[field]?.toString().trim(); // Ensure string format
+      const key = value || "Empty";
+      groupedData[key] = (groupedData[key] || 0) + 1;
     });
     return groupedData;
   }, []);
+  
 
   // Memoized domain data
   const domainData = useMemo(() => groupDataByField(selectedFilter, filteredTickets), [selectedFilter, filteredTickets, groupDataByField]);
@@ -168,34 +177,47 @@ function Reports() {
   // Handle date and label filtering
   useEffect(() => {
     let filteredData = tickets;
-
+  
+    // Filter by selected labels
     filteredData = filteredData.filter((ticket) =>
       selectedLabels.every((labels, index) => {
-        if (labels.length === 0) return true; // No filter applied for this category
+        if (!Array.isArray(labels) || labels.length === 0) return true; // No filter applied
     
-        const field = ["type", "status", "customer","domain", "subdomain", "customer_branch" ][index]; // Removed SLA, as it wasn’t mapped correctly
+        const field = ["type", "status", "customer", "domain", "subdomain", "customer_branch"][index]; 
         const ticketValue = ticket[field] ? ticket[field].toString().trim().toLowerCase() : "";
     
-        return labels.some(label => ticketValue === label.toLowerCase()); // Ensures exact match
+        return labels.some((label) => typeof label === "string" && ticketValue === label.toLowerCase()); // Ensures label is a string
       })
     );
     
-
+  
+    // Search filtering (Fix: Access ticket[field] correctly)
+    filteredData = filteredData.filter((ticket, index) => {
+      const field = ["type", "status", "customer", "domain", "subdomain", "customer_branch"][index]; 
+      const ticketValue = ticket[field] ? ticket[field].toString().trim().toLowerCase() : "";
+  
+      return ticketValue.includes((searchTerm[index] || "").toLowerCase());
+    });
+  
     // Filter by date range
     if (fromDate || toDate) {
       filteredData = filteredData.filter((ticket) => {
         const dateField = selectedDateFilter === "createdAt" ? ticket.post_date : ticket.closed_date;
         if (!dateField) return false;
+  
         const ticketDate = dateField.split(" ")[0];
         const startDate = fromDate ? new Date(fromDate) : new Date("1900-01-01");
         const endDate = toDate ? new Date(toDate) : new Date("2100-01-01");
         const selectedDate = new Date(ticketDate);
+  
         return selectedDate >= startDate && selectedDate <= endDate;
       });
     }
-
+  
     setFilteredTickets(filteredData);
-  }, [selectedLabels, tickets, fromDate, toDate, selectedDateFilter]);
+  }, [selectedLabels, tickets, fromDate, toDate, selectedDateFilter, searchTerm]);
+  
+  
   
   const handlePageChange = useCallback((event, newPage) => {
     setPage(newPage);
@@ -223,67 +245,70 @@ function Reports() {
         <div className="flex justify-center items-center text-xs w-full gap-1 ">
           <p className="font-semibold text-sm w-16">Filter :</p>
           {selectedLabels.map((selectedLabel, index) => (
-            <FormControl key={index} sx={{ m: 0.5, width: 130, height: 30 }}>
-              <Select
-                multiple
-                className="border w-28"
-                displayEmpty
-                value={selectedLabel}
-                onChange={handleFilterChange(index)}
-                input={<OutlinedInput />}
-                renderValue={(selected) =>
-                  selected.length === 0 ? (
-                    <span
-                      style={{
-                        color: "#aaa",
-                      }}
-                    >
-                      
-                      {
-                        [
-                          " type",
-                          " status",
-                          " customer",
-                          " category",
-                          " subcategory",
-                          " Branch"
-                        ][index]
-                      }
-                    </span>
-                  ) : (
-                    selected.join(", ")
-                  )
-                }
-                MenuProps={{
-                  PaperProps: {
-                    style: { maxHeight: 30 * 4.5 + 2, width: 180 },
-                  },
+          <FormControl key={index} sx={{ m: 0.5, width: 130, height: 30 }}>
+          <Select
+            multiple
+            className="border w-28"
+            displayEmpty
+            value={selectedLabel}
+            onChange={handleFilterChange(index)}
+            input={<OutlinedInput />}
+            renderValue={(selected) =>
+              selected.length === 0 ? (
+                <span style={{ color: "#aaa" }}>
+                  {[" type", " status", " customer", " category", " subcategory", " Branch"][index]}
+                </span>
+              ) : (
+                selected.join(", ")
+              )
+            }
+            MenuProps={{
+              PaperProps: {
+                style: { maxHeight: 30 * 4.5 + 2, width: 180 },
+              },
+            }}
+            sx={{ fontSize: "0.75rem", padding: "2px", height: 30 }}
+          >
+            {/* Search Bar inside the dropdown */}
+            <MenuItem disableRipple>
+              <OutlinedInput
+                autoFocus
+                placeholder="Search..."
+                value={searchTerm[index] || ""}
+                onChange={(e) => {
+                  const updatedSearchTerm = [...searchTerm];
+                  updatedSearchTerm[index] = e.target.value.trim().toLowerCase(); // Ensure case-insensitive search
+                  setSearchTerm(updatedSearchTerm);
                 }}
-                sx={{ fontSize: "0.75rem", padding: "2px", height: 30 }}
-              >
-                {Object.entries(
-                  groupDataByField(
-                    ["type", "status", "customer", "domain", "subdomain", "customer_branch"][
-                      index
-                    ],
-                    tickets
-                  )
-                ).map(([label]) => (
-                  <MenuItem
-                    key={label}
-                    value={label}
-                    sx={{ padding: "2px 4px", fontSize: "0.4rem" }}
-                  >
-                    <Checkbox
-                      checked={selectedLabel.includes(label)}
-                      size="small"
-                      sx={{ fontSize: "0.4rem" }} // Adjust the size directly here if necessary
-                    />
-                    <ListItemText primary={label} sx={{ fontSize: "0.4rem" }} />
-                  </MenuItem>
-                ))}
-              </Select>
-            </FormControl>
+                
+                sx={{
+                  fontSize: "0.75rem",
+                  padding: "4px",
+                  width: "100%",
+                }}
+              />
+            </MenuItem>
+        
+            {/* Dynamically filter and show checkbox options */}
+            {Object.entries(
+  groupDataByField(
+    ["type", "status", "customer", "domain", "subdomain", "customer_branch"][index] || "",
+    tickets || []
+  )
+)
+.filter(([label]) => 
+  label && label.toLowerCase().includes((searchTerm[index] || "").toLowerCase()) // Case-insensitive match
+)
+.map(([label]) => (
+  <MenuItem key={label} value={label} sx={{ padding: "2px 4px", fontSize: "0.4rem" }}>
+    <Checkbox checked={selectedLabel.includes(label)} size="small" sx={{ fontSize: "0.4rem" }} />
+    <ListItemText primary={label} sx={{ fontSize: "0.4rem" }} />
+  </MenuItem>
+))}
+
+          </Select>
+        </FormControl>
+        
           ))}
 
 
