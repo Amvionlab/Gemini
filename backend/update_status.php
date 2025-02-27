@@ -27,6 +27,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         domain.name AS ticket_domain_value,
         client.name AS ticket_customer_value,
         location.name AS ticket_location_value,
+        CONCAT(customer.gcl_region,'-',customer.node, '-',customer.a_end) AS customer_branch,
         sla.level AS ticket_sla_value,
         department.name AS ticket_department_value,
         sub_domain.name AS ticket_subdomain_value,
@@ -49,6 +50,8 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         domain ON ticket.domain = domain.id
     LEFT JOIN 
         client ON ticket.customer_name = client.id
+    LEFT JOIN 
+        customer ON ticket.customer_location = customer.id
     LEFT JOIN 
         location ON ticket.customer_location = location.id
     LEFT JOIN 

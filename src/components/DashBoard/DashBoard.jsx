@@ -34,6 +34,7 @@ const App = () => {
   const { setTicketId } = useTicketContext();
   const [activeTypeId, setActiveTypeId] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
+  const [docket, setDocket] = useState("");
   const scrollContainerRef = useRef();
   const [selectedRCA, setSelectedRCA] = useState("");
   const [rcaList, setRcaList] = useState([]);
@@ -203,6 +204,7 @@ const App = () => {
         ticket_id: ticketId,
         rca_id: selectedRCA,
         move_date: selectedDate,
+        docket: docket,
         done_by: user?.name || "System",
     };
 
@@ -393,11 +395,12 @@ const App = () => {
                             >
                               {ticket.ticket_customer_value}
                             </p>
-                            {ticket.scheduled_date && (
+                            
+                           
                               <p className="truncate" title={ticket.scheduled_date}>
-                                Visit on {ticket.scheduled_date}
+                                {ticket.customer_branch}
                               </p>
-                            )}
+                           
                           </div>
                           <div className="rounded-md pr-1 w-6 h-6 min-w-6 flex items-center justify-center">
                             <span className="font-semibold">#{ticket.id}</span>
@@ -460,6 +463,17 @@ const App = () => {
                   ))}
                 </Select>
               </FormControl>
+            )}
+            {targetColumnTitle === "Closed" && (
+              <TextField
+              label="Docket No :"
+              type="text-local"
+              fullWidth
+              margin="dense"
+              required
+              InputLabelProps={{ shrink: true }}
+              onChange={(e) => setDocket(e.target.value)}
+            />
             )}
           </DialogContent>
 

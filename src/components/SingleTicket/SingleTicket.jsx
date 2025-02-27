@@ -73,6 +73,7 @@ const SingleTicket = () => {
   const [status, setStatus] = useState([]);
   const [Accesses, setAccesses] = useState([]);
   const { user } = useContext(UserContext);
+  const [docket, setDocket] = useState("");
   const [open, setOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState(null);
   const [selectedRCA, setSelectedRCA] = useState("");
@@ -967,6 +968,7 @@ useEffect(() => {
             const requestData = {
                 ticket_id: id,  // Ensure correct ticket ID
                 rca_id: selectedRCA,
+                docket: docket,
                 move_date: selectedDate,
                 done_by: user?.name || "System",
             };
@@ -1866,6 +1868,17 @@ useEffect(() => {
                             </MenuItem>
                         ))}
                     </TextField>
+                )}
+                {status[selectedStep]?.subName === "Closed" && (
+                    <TextField
+                    label="Docket No :"
+                    type="text-local"
+                    fullWidth
+                    margin="dense"
+                    required
+                    InputLabelProps={{ shrink: true }}
+                    onChange={(e) => setDocket(e.target.value)}
+                  />
                 )}
             </DialogContent>
 
