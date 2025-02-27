@@ -286,6 +286,7 @@ const filteredCustomers = filteredByCid.filter(
             setShowDropdown(true);
           }}
           onFocus={() => setShowDropdown(true)}
+          autocomplete="off"
           className="w-72 text-xs bg-box border p-1.5 px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
         />
 

@@ -341,6 +341,7 @@ const App = () => {
           value={search}
           onChange={(e) => setSearch(e.target.value)}
           onFocus={() => setShowDropdown(true)}
+          autocomplete="off"
           onBlur={() => setTimeout(() => setShowDropdown(false), 200)} // Delay to allow click
         />
 
@@ -448,7 +449,7 @@ const App = () => {
                         >
                           {ticket.ticket_customer_value}
                         </p>
-                        <p className="truncate" title={ticket.scheduled_date}>
+                        <p className="truncate" title={ticket.customer_branch}>
                           {ticket.customer_branch}
                         </p>
                       </div>
