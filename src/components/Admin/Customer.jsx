@@ -136,7 +136,6 @@ const Form = () => {
     e.preventDefault();
   
     const form = new FormData();
-   
     Object.keys(formData).forEach((key) => {
       form.append(key, formData[key]);
     });
@@ -144,7 +143,7 @@ const Form = () => {
     if (attachment) {
       form.append("attachment", attachment);
     }
-  
+    console.log(form)
     try {
       const response = await fetch(`${baseURL}/backend/customer_add.php`, {
         method: "POST",
@@ -170,6 +169,7 @@ const Form = () => {
         branchcode: "",
         a_end: "",
         b_end: "",
+        shift: "",
         node: "",
         modem_type: "",
         router_ip: "",
@@ -399,6 +399,7 @@ fetchData(); // Fetch updated data
   { label: "BRANCH CODE", type: "text", name: "branchcode" },
   { label: "A END", type: "text", name: "a_end" },
   { label: "B END", type: "text", name: "b_end" },
+  { label: "SHIFTING ADDRESS", type: "text", name: "shift" },
   { label: "NODE", type: "text", name: "node" },
   { label: "MODEM TYPE", type: "text", name: "modem_type" },
   { label: "ROUTER IP", type: "text", name: "router_ip" },
@@ -408,11 +409,11 @@ fetchData(); // Fetch updated data
   { label: "BAND WIDTH", type: "text", name: "band_width" },
   { label: "LOCATION TYPE", type: "text", name: "location_type" },
   { label: "ADDRESS", type: "text", name: "address" },
-  { label: "CONTACT NUMBER", type: "number", name: "contact_num" },
-  { label: "MOBILE NUMBER", type: "number", name: "mob_num" },
+  { label: "CONTACT NUMBER", type: "text", name: "contact_num" },
+  { label: "MOBILE NUMBER", type: "text", name: "mob_num" },
   { label: "COMMISSIONED DATE", type: "text", name: "commi_date" },
   { label: "STATE/CITY", type: "text", name: "state_city" },
-  { label: "E MAIL ID", type: "email", name: "email" },
+  { label: "E MAIL ID", type: "text", name: "email" },
   { label: "SLA", type: "text", name: "sla" },
   { label: "SERVICE PROVIDER", type: "text", name: "service_provider" },
 ].map(({ label, type, name }, index) => (
@@ -430,52 +431,7 @@ fetchData(); // Fetch updated data
 ))}
 
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-1 ml-20 pr-20">
-              <div className="ml-4 mt-1 md:ml-0 md:w-full flex justify-center items-center">
-                <label
-                  htmlFor="dropzone-file"
-                  className="flex flex-col items-center justify-center rounded-lg cursor-pointer  dark:hover:bg-bray-800 w-full md:w-1/2"
-                >
-                  <div className="flex flex-col items-center justify-center">
-                    <svg
-                      className={
-                        attachment
-                          ? "w-8 h-8 text-flo dark:text-gray-500"
-                          : "w-8 h-8 text-gray-500 dark:text-gray-500"
-                      }
-                      aria-hidden="true"
-                      xmlns="http://www.w3.org/2000/svg"
-                      fill="none"
-                      viewBox="0 0 20 16"
-                    >
-                      <path
-                        stroke="currentcolor"
-                        strokeLinecap="round"
-                        strokeLinejoin="round"
-                        strokeWidth="2"
-                        d="M13 13h3a3 3 0 0 0 0-6h-.025A5.56 5.56 0 0 0 16 6.5 5.5 5.5 0 0 0 5.207 5.021C5.137 5.017 5.071 5 5 5a4 4 0 0 0 0 8h2.167M10 15V6m0 0L8 8m2-2 2 2"
-                      />
-                    </svg>
-                    <p
-                      className={
-                        attachment
-                          ? " text-sm text-flo font-bold"
-                          : " text-sm text-prime font-bold"
-                      }
-                    >
-                      {attachment ? attachment.name : "Click to upload"}
-                    </p>
-                  </div>
-                  <input
-                    id="dropzone-file"
-                    name="attachment"
-                    type="file"
-                    onChange={handleFileChange}
-                    className="hidden"
-                  />
-                </label>
-              </div>
-            </div>
+           
 
             <div className="flex justify-center">
               <button

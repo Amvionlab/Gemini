@@ -1461,7 +1461,7 @@ useEffect(() => {
                     }}
                     className="gap-1 flex items-center bg-[red] px-4 py-2 rounded-md text-white cursor-pointer"
                   >
-                    <span>Cancel</span>
+                    <span>Close</span>
                     <FontAwesomeIcon
                       icon={faXmark}
                       className="text-xl text-white"

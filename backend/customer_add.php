@@ -37,6 +37,7 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         $branch_code = $_POST['branchcode'] ?? '';
         $a_end = $_POST['a_end'] ?? '';
         $b_end = $_POST['b_end'] ?? '';
+        $shift = $_POST['shift'] ?? '';
         $node = $_POST['node'] ?? '';
         $modem_type = $_POST['modem_type'] ?? '';
         $router_ip = $_POST['router_ip'] ?? '';
@@ -58,11 +59,11 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         // Prepare SQL statement
         $stmt = $conn->prepare("INSERT INTO customer (
             cid, gcl_unique_code, gcl_region, branch_code, 
-            a_end, b_end, node, modem_type, router_ip, primary_link, 
+            a_end, b_end, shifting_address, node, modem_type, router_ip, primary_link, 
             wan_ip, circuit_id, band_width, location_type, address, 
             contact_person, mobile, commissioned_date, state_city, email, 
             sla, service_provider, is_active, post_date
-        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
+        ) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, NOW())");
         
         
         if (!$stmt) {
@@ -71,9 +72,9 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
         }
 
         // Bind parameters (without duplicate)
-        $stmt->bind_param("issssssssssssssssssssss", 
+        $stmt->bind_param("isssssssssssssssssssssss", 
     $client_id, $gcl_unique_code, $gcl_region, $branch_code, 
-    $a_end, $b_end, $node, $modem_type, $router_ip, $primary_link, 
+    $a_end, $b_end, $shift, $node, $modem_type, $router_ip, $primary_link, 
     $wan_ip, $circuit_id, $band_width, $location_type, $address, 
     $contact_number, $mobile_number, $commissioned_date, $state_city, $email_id, 
     $sla, $service_provider, $is_active
