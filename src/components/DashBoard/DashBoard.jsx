@@ -34,6 +34,7 @@ const App = () => {
   const { setTicketId } = useTicketContext();
   const [activeTypeId, setActiveTypeId] = useState(null);
   const [selectedDate, setSelectedDate] = useState("");
+  const [docket, setDocket] = useState("");
   const scrollContainerRef = useRef();
   const [selectedRCA, setSelectedRCA] = useState("");
   const [rcaList, setRcaList] = useState([]);
@@ -203,6 +204,7 @@ const App = () => {
         ticket_id: ticketId,
         rca_id: selectedRCA,
         move_date: selectedDate,
+        docket: docket,
         done_by: user?.name || "System",
     };
 
@@ -450,6 +452,17 @@ const App = () => {
                   ))}
                 </Select>
               </FormControl>
+            )}
+            {targetColumnTitle === "Closed" && (
+              <TextField
+              label="Docket No :"
+              type="text-local"
+              fullWidth
+              margin="dense"
+              required
+              InputLabelProps={{ shrink: true }}
+              onChange={(e) => setDocket(e.target.value)}
+            />
             )}
           </DialogContent>
 
