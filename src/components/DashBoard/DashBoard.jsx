@@ -39,7 +39,12 @@ const App = () => {
   const [selectedRCA, setSelectedRCA] = useState("");
   const [rcaList, setRcaList] = useState([]);
   const { ticketId: selectedTicketId } = useTicketContext();
+  const [selectedBranch, setSelectedBranch] = useState(""); // Store selected branch
+  const [search, setSearch] = useState(""); // Search input state
+  const [showDropdown, setShowDropdown] = useState(false); // Control dropdown visibility
 
+
+  const uniqueBranches = [...new Set(tickets.map((ticket) => ticket.customer_branch))];
   useEffect(() => {
     const fetchInitialData = async () => {
       await fetchStatusData();
@@ -309,6 +314,13 @@ const App = () => {
     });
   };
 
+  const filteredBranches =
+  search.trim() === "" ? uniqueBranches : uniqueBranches.filter((branch) =>
+    branch.toLowerCase().includes(search.toLowerCase())
+  );
+
+
+
   return (
     <div className="bg-second p-0.5 h-full">
     <div className="bg-box h-full">
@@ -320,16 +332,58 @@ const App = () => {
         </div>
 
         <div>
+        
+        <input
+          type="text"
+          id="branchFilter"
+          className="border rounded p-2 w-80 mt-1"
+          placeholder="Search branch..."
+          value={search}
+          onChange={(e) => setSearch(e.target.value)}
+          onFocus={() => setShowDropdown(true)}
+          onBlur={() => setTimeout(() => setShowDropdown(false), 200)} // Delay to allow click
+        />
+
+        {showDropdown && (
+          <ul className="absolute left-72 w-80 bg-white border rounded shadow-md max-h-40 overflow-y-auto mt-1 z-10">
+            <li
+              className="p-2 hover:bg-gray-100 cursor-pointer"
+              onMouseDown={() => {
+                setSelectedBranch("");
+                setSearch("");
+              }}
+            >
+              All Branches
+            </li>
+            {filteredBranches.map((branch, index) => (
+              <li
+                key={index}
+                className="p-2 hover:bg-gray-100 cursor-pointer"
+                onMouseDown={() => {
+                  setSelectedBranch(branch);
+                  setSearch(branch);
+                }}
+              >
+                {/* Bold matching letters */}
+                {branch.split("").map((char, i) => (
+                  <span key={i} className={search.toLowerCase().includes(char.toLowerCase()) ? "font-bold text-blue-600" : ""}>
+                    {char}
+                  </span>
+                ))}
+              </li>
+            ))}
+          </ul>
+        )}
+        </div>
+
+        <div>
           
         </div>
         <div className="m-2 flex-row-reverse header-right items-center">
           
           <div className="ml-4">
-          <div>
-            <select name="" id="">
-         
-            </select>
-          </div>
+
+
             {ticketTypes.map((type) => (
               <Button
                 key={type.id}
@@ -353,65 +407,64 @@ const App = () => {
           ref={scrollContainerRef}
           className="flex overflow-x-auto whitespace-nowrap p-0 h-full overflow-y-auto"
         >
+          {/* Ticket Columns */}
           <div className="flex-grow max-h-full flex items-start relative">
-            {columns.map((column) => (
-              <div
-                key={column.id}
-                id={column.id}
-                className="column bg-box border shadow-xl"
-                onDragOver={(e) => e.preventDefault()}
-                onDrop={(e) => handleDrop(e, column.id)}
-              >
-                <h2 className="mb-2 text-prime text-center text-xl font-semibold uppercase">
-                  {column.title}
-                </h2>
-                <div className="column-content mb-2">
-                  {tickets
-                    .filter((ticket) => ticket.status === column.id)
-                    .map((ticket) => (
-                      <div
-                        key={ticket.id}
-                        className={
-                          ticket.color === "3"
-                            ? "draggable shadow-sm shadow-red-700 hover:shadow-md mb-4 hover:shadow-red-700 text-[red]"
-                            : ticket.color === "2"
-                            ? "draggable shadow-sm shadow-yellow-600 hover:shadow-md hover:shadow-yellow-600 mb-4 text-yellow-600"
-                            : "draggable shadow-sm shadow-green-500 hover:shadow-md hover:shadow-green-500 mb-4 text-green-700"
-                        }
-                        draggable
-                        onDragStart={
-                          user && user.ticketaction === "1"
-                            ? (e) => handleDragStart(e, ticket)
-                            : null
-                        }
-                        onClick={() => handleViewTicket(ticket.id)}
-                        style={{ cursor: "pointer" }}
-                      >
-                        <div className="flex justify-between items-center">
-                          <div className="flex-1">
-                            <p
-                              className="font-semibold text-prime font-poppins truncate"
-                              title={ticket.ticket_customer_value}
-                            >
-                              {ticket.ticket_customer_value}
-                            </p>
-                            
-                           
-                              <p className="truncate" title={ticket.scheduled_date}>
-                                {ticket.customer_branch}
-                              </p>
-                           
-                          </div>
-                          <div className="rounded-md pr-1 w-6 h-6 min-w-6 flex items-center justify-center">
-                            <span className="font-semibold">#{ticket.id}</span>
-                          </div>
-                        </div>
+        {columns.map((column) => (
+          <div
+            key={column.id}
+            id={column.id}
+            className="column bg-box border shadow-xl"
+            onDragOver={(e) => e.preventDefault()}
+            onDrop={(e) => handleDrop(e, column.id)}
+          >
+            <h2 className="mb-2 text-prime text-center text-xl font-semibold uppercase">
+              {column.title}
+            </h2>
+            <div className="column-content mb-2">
+              {tickets
+                .filter((ticket) => ticket.status === column.id)
+                .filter((ticket) => (selectedBranch ? ticket.customer_branch === selectedBranch : true)) // Apply filter
+                .map((ticket) => (
+                  <div
+                    key={ticket.id}
+                    className={
+                      ticket.color === "3"
+                        ? "draggable shadow-sm shadow-red-700 hover:shadow-md mb-4 hover:shadow-red-700 text-[red]"
+                        : ticket.color === "2"
+                        ? "draggable shadow-sm shadow-yellow-600 hover:shadow-md hover:shadow-yellow-600 mb-4 text-yellow-600"
+                        : "draggable shadow-sm shadow-green-500 hover:shadow-md hover:shadow-green-500 mb-4 text-green-700"
+                    }
+                    draggable
+                    onDragStart={
+                      user && user.ticketaction === "1"
+                        ? (e) => handleDragStart(e, ticket)
+                        : null
+                    }
+                    onClick={() => handleViewTicket(ticket.id)}
+                    style={{ cursor: "pointer" }}
+                  >
+                    <div className="flex justify-between items-center">
+                      <div className="flex-1">
+                        <p
+                          className="font-semibold text-prime font-poppins truncate"
+                          title={ticket.ticket_customer_value}
+                        >
+                          {ticket.ticket_customer_value}
+                        </p>
+                        <p className="truncate" title={ticket.scheduled_date}>
+                          {ticket.customer_branch}
+                        </p>
                       </div>
-                    ))}
-                </div>
-              </div>
-            ))}
+                      <div className="rounded-md pr-1 w-6 h-6 min-w-6 flex items-center justify-center">
+                        <span className="font-semibold">#{ticket.id}</span>
+                      </div>
+                    </div>
+                  </div>
+                ))}
+            </div>
           </div>
+        ))}
+      </div>
         </div>
         <button
           className="scroll-button absolute left-2 top-1/2 transform -translate-y-1/2 px-2 py-1 bg-black/10 rounded-full text-2xl"
