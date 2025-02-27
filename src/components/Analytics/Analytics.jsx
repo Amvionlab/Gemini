@@ -256,7 +256,7 @@ function Reports() {
                 }
                 MenuProps={{
                   PaperProps: {
-                    style: { maxHeight: 30 * 4.5 + 2, width: 180 },
+                    style: { maxHeight: 30 * 4.5 + 2, minwidth: 180 },
                   },
                 }}
                 sx={{ fontSize: "0.75rem", padding: "2px", height: 30 }}

@@ -20,6 +20,7 @@ if (isset($_GET['ids'])) {
         $sqlTickets = "
             SELECT 
                 ticket.id,
+                ticket.docket_no,
                 client.name AS customer,
                 ticket_type.type AS type,
                 ticket_status.status AS status,
@@ -71,6 +72,7 @@ if (isset($_GET['ids'])) {
                 customer.branch_code,
                 customer.a_end,
                 customer.b_end,
+                customer.shifting_address,
                 customer.node,
                 customer.modem_type,
                 customer.router_ip,
@@ -127,7 +129,7 @@ if (isset($_GET['ids'])) {
         $result = $conn->query($sqlTickets);
         if ($result->num_rows > 0) {
             $output = fopen('php://output', 'w');
-            fputcsv($output, ['Ticket ID', 'Customer', 'Type', 'Status', 'Nature of Call', 'Service', 'Domain', 'Subdomain', 'RCA', 'Assignees', 'Created By', 'Created On', 'Closed On', 'Time Taken', 'Unique Code', 'Region', 'Branch Code', 'A End', 'B End', 'Node', 'Modem Type', 'Router IP', 'Primary Link', 'WAN IP', 'Circuit ID', 'Bandwidth', 'Location Type', 'Address', 'Contact Person', 'Mobile', 'Commissioned Date', 'State/City', 'Email', 'Customer SLA', 'Service Provider', 'Timesheet', 'Logs']);
+            fputcsv($output, ['Ticket ID', 'Customer', 'Type', 'Status', 'Nature of Call', 'Service', 'Domain', 'Subdomain', 'RCA', 'Docket No', 'Assignees', 'Created By', 'Created On', 'Closed On', 'Time Taken', 'Unique Code', 'Region', 'Branch Code', 'A End', 'B End', 'Shifting Address', 'Node', 'Modem Type', 'Router IP', 'Primary Link', 'WAN IP', 'Circuit ID', 'Bandwidth', 'Location Type', 'Address', 'Contact Person', 'Mobile', 'Commissioned Date', 'State/City', 'Email', 'Customer SLA', 'Service Provider', 'Timesheet', 'Logs']);
 
             // Write each row as CSV
             while ($row = $result->fetch_assoc()) {
@@ -182,10 +184,10 @@ if (isset($_GET['ids'])) {
                 $csvRow = [
                     $row['id'], $row['customer'], $row['type'], $row['status'], 
                     $row['nature_of_call'], $row['service'], $row['domain'], 
-                    $row['subdomain'], $row['rca'], $row['assignees'], $row['name'], 
+                    $row['subdomain'], $row['rca'], $row['docket_no'], $row['assignees'], $row['name'], 
                     $row['opened_by'], $row['closed_date'], $row['time_taken'], 
                     $row['gcl_unique_code'], $row['gcl_region'], 
-                    $row['branch_code'], $row['a_end'], $row['b_end'], 
+                    $row['branch_code'], $row['a_end'], $row['b_end'], $row['shifting_address'], 
                     $row['node'], $row['modem_type'], 
                     $row['router_ip'], $row['primary_link'], 
                     $row['wan_ip'], $row['circuit_id'], 

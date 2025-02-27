@@ -73,6 +73,7 @@ const SingleTicket = () => {
   const [status, setStatus] = useState([]);
   const [Accesses, setAccesses] = useState([]);
   const { user } = useContext(UserContext);
+  const [docket, setDocket] = useState("");
   const [open, setOpen] = useState(false);
   const [selectedStep, setSelectedStep] = useState(null);
   const [selectedRCA, setSelectedRCA] = useState("");
@@ -1001,6 +1002,7 @@ useEffect(() => {
             const requestData = {
                 ticket_id: id,  // Ensure correct ticket ID
                 rca_id: selectedRCA,
+                docket: docket,
                 move_date: selectedDate,
                 done_by: user?.name || "System",
             };
@@ -1098,7 +1100,7 @@ useEffect(() => {
       )}
 
       {/* <div className="progress-container w-full mb-3 pt-5 bg-box font-poppins shadow-md"></div> */}
-      <div className="overflow-y-scroll h-[100%]">
+      <div className="overflow-y-scroll h-[80%]">
         <div className="w-full mx-auto bg-box ">
           <div className="py-2 px-10 flex justify-between items-center bg-white rounded-t-lg shadow-sm">
           <div className="flex items-center gap-2 text-prime font-bold">
@@ -1511,7 +1513,7 @@ useEffect(() => {
                     }}
                     className="gap-1 flex items-center bg-[red] px-4 py-2 rounded-md text-white cursor-pointer"
                   >
-                    <span>Cancel</span>
+                    <span>Close</span>
                     <FontAwesomeIcon
                       icon={faXmark}
                       className="text-xl text-white"
@@ -1918,6 +1920,17 @@ useEffect(() => {
                             </MenuItem>
                         ))}
                     </TextField>
+                )}
+                {status[selectedStep]?.subName === "Closed" && (
+                    <TextField
+                    label="Docket No :"
+                    type="text-local"
+                    fullWidth
+                    margin="dense"
+                    required
+                    InputLabelProps={{ shrink: true }}
+                    onChange={(e) => setDocket(e.target.value)}
+                  />
                 )}
             </DialogContent>
 
