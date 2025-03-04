@@ -1,103 +1,22 @@
-2025-02-21 12:25:16 - Script started
-2025-02-21 12:25:17 - Preparing SQL statement
-2025-02-21 12:25:17 - Ticket inserted successfully, ID: 1
-2025-02-21 12:25:21 - Log inserted successfully
-2025-02-21 12:25:21 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-21 12:50:59 - Script started
-2025-02-21 12:50:59 - Preparing SQL statement
-2025-02-21 12:50:59 - Ticket inserted successfully, ID: 2
-2025-02-21 12:51:04 - Log inserted successfully
-2025-02-21 12:51:04 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-21 13:21:31 - Script started
-2025-02-21 13:21:31 - Preparing SQL statement
-2025-02-21 13:21:31 - Ticket inserted successfully, ID: 3
-2025-02-21 13:21:34 - Log inserted successfully
-2025-02-21 13:21:34 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-21 13:41:12 - Script started
-2025-02-21 13:41:12 - Preparing SQL statement
-2025-02-21 13:41:12 - Ticket inserted successfully, ID: 4
-2025-02-21 13:41:16 - Log inserted successfully
-2025-02-21 13:41:16 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-21 14:05:31 - Script started
-2025-02-21 14:05:31 - Preparing SQL statement
-2025-02-21 14:05:31 - Ticket inserted successfully, ID: 5
-2025-02-21 14:05:31 - Log inserted successfully
-2025-02-21 14:05:31 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-<<<<<<< HEAD
-2025-02-24 07:17:20 - Script started
-2025-02-24 07:17:20 - Preparing SQL statement
-2025-02-24 07:17:20 - Ticket inserted successfully, ID: 6
-2025-02-24 07:17:29 - Log inserted successfully
-2025-02-24 07:17:29 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-24 07:19:42 - Script started
-2025-02-24 07:19:42 - Preparing SQL statement
-2025-02-24 07:19:42 - Ticket inserted successfully, ID: 7
-2025-02-24 07:19:46 - Log inserted successfully
-2025-02-24 07:19:46 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-24 07:30:38 - Script started
-2025-02-24 07:30:38 - Preparing SQL statement
-2025-02-24 07:30:38 - Ticket inserted successfully, ID: 8
-2025-02-24 07:30:43 - Log inserted successfully
-2025-02-24 07:30:43 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-24 07:31:07 - Script started
-2025-02-24 07:31:07 - Preparing SQL statement
-2025-02-24 07:31:07 - Ticket inserted successfully, ID: 9
-2025-02-24 07:31:13 - Log inserted successfully
-2025-02-24 07:31:13 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-=======
-2025-02-24 06:22:50 - Script started
-2025-02-24 06:22:50 - Preparing SQL statement
-2025-02-24 06:22:50 - Ticket inserted successfully, ID: 6
-2025-02-24 06:22:50 - Log inserted successfully
-2025-02-24 06:22:50 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-24 06:26:07 - Script started
-2025-02-24 06:26:07 - Preparing SQL statement
-2025-02-24 06:26:07 - Ticket inserted successfully, ID: 7
-2025-02-24 06:26:10 - Log inserted successfully
-2025-02-24 06:26:10 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-24 06:40:35 - Script started
-2025-02-24 06:40:35 - Preparing SQL statement
-2025-02-24 06:40:35 - Ticket inserted successfully, ID: 8
-2025-02-24 06:40:39 - Log inserted successfully
-2025-02-24 06:40:39 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
->>>>>>> c9dbba218c01e4ec6f8a7b98e740406b1abe368d
-2025-02-24 07:52:27 - Script started
-2025-02-24 07:52:27 - Preparing SQL statement
-2025-02-24 07:52:27 - Ticket inserted successfully, ID: 9
-2025-02-24 07:52:35 - Log inserted successfully
-2025-02-24 07:52:35 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-24 12:44:03 - Script started
-2025-02-24 12:44:03 - Preparing SQL statement
-2025-02-24 12:44:03 - Ticket inserted successfully, ID: 10
-2025-02-24 12:44:09 - Log inserted successfully
-2025-02-24 12:44:09 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-24 12:55:12 - Script started
-2025-02-24 12:55:12 - Preparing SQL statement
-2025-02-24 12:55:12 - Ticket inserted successfully, ID: 11
-2025-02-24 12:55:15 - Log inserted successfully
-2025-02-24 12:55:15 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-25 06:19:18 - Script started
-2025-02-25 06:19:18 - Preparing SQL statement
-2025-02-25 06:19:18 - Ticket inserted successfully, ID: 9
-2025-02-25 06:19:22 - Log inserted successfully
-2025-02-25 06:19:22 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-25 13:32:00 - Script started
-2025-02-25 13:32:00 - Preparing SQL statement
-2025-02-25 13:32:00 - Ticket inserted successfully, ID: 10
-2025-02-25 13:32:05 - Log inserted successfully
-2025-02-25 13:32:05 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-25 13:35:38 - Script started
-2025-02-25 13:35:38 - Preparing SQL statement
-2025-02-25 13:35:38 - Ticket inserted successfully, ID: 11
-2025-02-25 13:35:38 - Log inserted successfully
-2025-02-25 13:35:38 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-25 13:39:36 - Script started
-2025-02-25 13:39:36 - Preparing SQL statement
-2025-02-25 13:39:36 - Ticket inserted successfully, ID: 12
-2025-02-25 13:39:39 - Log inserted successfully
-2025-02-25 13:39:39 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
-2025-02-25 13:40:05 - Script started
-2025-02-25 13:40:05 - Preparing SQL statement
-2025-02-25 13:40:05 - Ticket inserted successfully, ID: 13
-2025-02-25 13:40:07 - Log inserted successfully
-2025-02-25 13:40:07 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-04 11:04:54 - Script started
+2025-03-04 11:04:54 - Location values: East, RCC Kolkata, Kolkata
+2025-03-04 11:04:54 - Employee query: SELECT employee_id FROM employee WHERE location IN (?,?,?) AND department = 'RH'
+2025-03-04 11:04:54 - Binding types: sss
+2025-03-04 11:04:54 - Binding values: East, RCC Kolkata, Kolkata
+2025-03-04 11:04:54 - Employee ID found: 2117
+2025-03-04 11:04:54 - Fetched user ID: 8
+2025-03-04 11:04:54 - Preparing SQL statement for ticket insertion
+2025-03-04 11:04:54 - Ticket inserted successfully, ID: 230
+2025-03-04 11:04:54 - Log inserted successfully
+2025-03-04 11:04:54 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-04 11:15:15 - Script started
+2025-03-04 11:15:15 - Location values: East, RCC Kolkata, Kolkata
+2025-03-04 11:15:15 - Employee query: SELECT employee_id FROM employee WHERE location IN (?,?,?) AND department = 'RH'
+2025-03-04 11:15:15 - Binding types: sss
+2025-03-04 11:15:15 - Binding values: East, RCC Kolkata, Kolkata
+2025-03-04 11:15:15 - Employee ID found: 2117
+2025-03-04 11:15:15 - Fetched user ID: 8
+2025-03-04 11:15:15 - Preparing SQL statement for ticket insertion
+2025-03-04 11:15:15 - Ticket inserted successfully, ID: 231
+2025-03-04 11:15:18 - Log inserted successfully
+2025-03-04 11:15:18 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
