@@ -1325,7 +1325,7 @@ useEffect(() => {
 <div className="flex-col w-full lg:w-1/5 pr-4 pl-2 pt-2 mr-2">
   {/* Header with Icon */}
   <div className="flex items-center gap-2 mb-4">
-    <span className="text-lg font-semibold ml-2 text-prime">Vendor</span>
+    <span className="text-lg font-semibold ml-2 text-prime">Engineers</span>
     <button
       type="button"
       className="text-prime text-xl ml-3"
@@ -1361,9 +1361,9 @@ useEffect(() => {
 
   {/* Vendor Selection Modal */}
   {isVendorModalOpen && (
-    <div className="fixed inset-0 bg-black bg-opacity-50 flex justify-center items-center">
-      <div className="bg-white p-6 rounded-lg h-auto shadow-lg w-11/12 sm:w-1/2 lg:w-1/3">
-        <h2 className="text-lg font-semibold mb-4">Select Vendors</h2>
+    <div className="fixed inset-0 bg-black bg-opacity-50">
+    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg h-auto shadow-lg w-11/12 sm:w-1/2 lg:w-1/3">
+      <h2 className="text-lg font-semibold mb-4">Select Engineers</h2>
 
         {/* Vendor Dropdown (Multi-select) */}
         <Select
@@ -1377,7 +1377,7 @@ useEffect(() => {
             updateVendorInDB(ticketId, selectedOptions.map((v) => v.value));
           }}
           value={selectedVendors}
-          placeholder="Select Vendor"
+          placeholder="Select Engineers"
         />
 
         {/* Close Button */}
