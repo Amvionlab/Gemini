@@ -16,6 +16,30 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         // Use FIND_IN_SET to check if $id is in the assignees list
         $cond = "(FIND_IN_SET($id, ticket.assignees) OR ticket.created_by = $id) AND ticket.ticket_type = $type";
     }
+    if (isset($_GET['manager'])) {
+        $managerId = intval($_GET['manager']);
+        
+        // Fetch manager details
+        $sqlManager = "SELECT firstname, location FROM user WHERE id = $managerId AND usertype = 4";
+        $resultManager = $conn->query($sqlManager);
+        
+        if ($resultManager->num_rows > 0) {
+            $manager = $resultManager->fetch_assoc();
+            $locations = explode(', ', $manager['location']); // Split locations into array
+            
+            // Prepare location conditions for SQL
+            $locationConditions = [];
+            foreach ($locations as $loc) {
+                $locationConditions[] = "customer.gcl_region LIKE '%$loc%'";
+            }
+            
+            $locationQuery = implode(' OR ', $locationConditions);
+            $cond = "($locationQuery) AND ticket.ticket_type = $type";
+        } else {
+            echo json_encode(array("message" => "No manager found"));
+            exit;
+        }
+    }
     
     $query = "
     SELECT 
@@ -62,7 +86,6 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
         sub_domain ON ticket.sub_domain = sub_domain.id
     WHERE 
         $cond";
-
 
     $result = $conn->query($query);
     
