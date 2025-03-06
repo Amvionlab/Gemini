@@ -6,7 +6,7 @@ $type = isset($_GET['type']) ? $_GET['type'] : '';
 $user = isset($_GET['user']) ? $_GET['user'] : '';
 $ttype = isset($_GET['ttype']) ? $_GET['ttype'] : '';
 // Initialize base SQL query
-$sql = "SELECT * FROM notification WHERE 1=1";
+$sql = "SELECT * FROM notification WHERE post_date >= CURRENT_DATE - INTERVAL '3' DAY";
 
 $params = [];
 
