@@ -57,93 +57,73 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $status = 2;
 
   
-    $cl = (int) $customer_location; 
-    $customerQuery = "SELECT gcl_region, a_end, node FROM customer WHERE id = ?";
-    $customerStmt = $conn->prepare($customerQuery);
-    if ($customerStmt === false) {
-        logMessage("Prepare failed for customer query: " . $conn->error);
-        echo json_encode(['status' => 'error', 'message' => 'Prepare failed for customer query.']);
+    $cl = (int) $customer_location;
+$customerQuery = "SELECT gcl_region FROM customer WHERE id = ?";
+$customerStmt = $conn->prepare($customerQuery);
+if ($customerStmt === false) {
+    logMessage("Prepare failed for customer query: " . $conn->error);
+    echo json_encode(['status' => 'error', 'message' => 'Prepare failed for customer query.']);
+    exit;
+}
+$customerStmt->bind_param("i", $cl);
+$customerStmt->execute();
+$customerResult = $customerStmt->get_result();
+$customerData = $customerResult->fetch_assoc();
+
+if ($customerData && !empty($customerData['gcl_region'])) {
+    $gcl_region = $customerData['gcl_region'];
+    logMessage("GCL Region: " . $gcl_region);
+
+    // Use LIKE to check if gcl_region is part of the location field
+    $employeeQuery = "SELECT employee_id FROM employee WHERE FIND_IN_SET(?, location) > 0 AND department = 'RH'";
+    logMessage("Employee query: " . $employeeQuery);
+
+    $employeeStmt = $conn->prepare($employeeQuery);
+    if ($employeeStmt === false) {
+        logMessage("Prepare failed for employee query: " . $conn->error);
+        echo json_encode(['status' => 'error', 'message' => 'Prepare failed for employee query.']);
         exit;
     }
-    $customerStmt->bind_param("i", $cl);
-    $customerStmt->execute();
-    $customerResult = $customerStmt->get_result();
-    $customerData = $customerResult->fetch_assoc();
 
-    if ($customerData) {
-        // Collect location values and filter out empty ones
-        $locationValues = array_filter([
-            $customerData['gcl_region'],
-            $customerData['a_end'],
-            $customerData['node']
-        ], function($value) {
-            return !empty($value); // Remove null or empty values
-        });
-    
-        logMessage("Location values: " . implode(', ', $locationValues));
-    
-        // If all values are empty, set $getid = 0 and skip the employee query
-        if (empty($locationValues)) {
-            logMessage("All location values are empty. Setting getid = 0.");
-            $getid = 0; // Set getid to 0
-        } else {
-            // Check matching employee
-            $placeholders = implode(',', array_fill(0, count($locationValues), '?'));
-            $employeeQuery = "SELECT employee_id FROM employee WHERE location IN ($placeholders) AND department = 'RH'";
-            logMessage("Employee query: " . $employeeQuery);
-    
-            $employeeStmt = $conn->prepare($employeeQuery);
-            if ($employeeStmt === false) {
-                logMessage("Prepare failed for employee query: " . $conn->error);
-                echo json_encode(['status' => 'error', 'message' => 'Prepare failed for employee query.']);
+    $employeeStmt->bind_param("s", $gcl_region);
+
+    if ($employeeStmt->execute()) {
+        $employeeResult = $employeeStmt->get_result();
+        $employeeData = $employeeResult->fetch_assoc();
+
+        if ($employeeData) {
+            $employee_id = $employeeData['employee_id'];
+            logMessage("Employee ID found: " . $employee_id);
+
+            $userQuery = "SELECT id FROM user WHERE employee_id = ?";
+            $userStmt = $conn->prepare($userQuery);
+            if ($userStmt === false) {
+                logMessage("Prepare failed for user query: " . $conn->error);
+                echo json_encode(['status' => 'error', 'message' => 'Prepare failed for user query.']);
                 exit;
             }
-    
-            // Bind parameters dynamically
-            $types = str_repeat('s', count($locationValues)); // 's' for each string parameter
-            logMessage("Binding types: " . $types);
-            logMessage("Binding values: " . implode(', ', $locationValues));
-    
-            $employeeStmt->bind_param($types, ...$locationValues); // Use the splat operator to unpack the array
-    
-            if ($employeeStmt->execute()) {
-                $employeeResult = $employeeStmt->get_result();
-                $employeeData = $employeeResult->fetch_assoc();
-    
-                if ($employeeData) {
-                    $employee_id = $employeeData['employee_id'];
-                    logMessage("Employee ID found: " . $employee_id);
-    
-                    // Get user ID from user table
-                    $userQuery = "SELECT id FROM user WHERE employee_id = ?";
-                    $userStmt = $conn->prepare($userQuery);
-                    if ($userStmt === false) {
-                        logMessage("Prepare failed for user query: " . $conn->error);
-                        echo json_encode(['status' => 'error', 'message' => 'Prepare failed for user query.']);
-                        exit;
-                    }
-                    $userStmt->bind_param("s", $employee_id);
-                    $userStmt->execute();
-                    $userResult = $userStmt->get_result();
-                    $userData = $userResult->fetch_assoc();
-    
-                    $getid = $userData['id'] ?? ''; // Default to 0 if no user ID is found
-                    logMessage("Fetched user ID: " . $getid);
-                } else {
-                    logMessage("No matching employee found.");
-                    $getid = ''; // Set getid to 0 if no employee is found
-                }
-            } else {
-                logMessage("Employee query execution failed: " . $employeeStmt->error);
-                $getid = ''; // Set getid to 0 if the query fails
-            }
-    
-            $employeeStmt->close();
+            $userStmt->bind_param("s", $employee_id);
+            $userStmt->execute();
+            $userResult = $userStmt->get_result();
+            $userData = $userResult->fetch_assoc();
+
+            $getid = $userData['id'] ?? '';
+            logMessage("Fetched user ID: " . $getid);
+        } else {
+            logMessage("No matching employee found.");
+            $getid = '';
         }
     } else {
-        logMessage("No customer data found for ID: " . $cl);
-        $getid = ''; // Set getid to 0 if no customer data is found
+        logMessage("Employee query execution failed: " . $employeeStmt->error);
+        $getid = '';
     }
+
+    $employeeStmt->close();
+} else {
+    logMessage("No customer data found for ID: " . $cl);
+    $getid = '';
+}
+
 
 
     // Insert ticket data
