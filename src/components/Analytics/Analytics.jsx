@@ -92,6 +92,8 @@ function Reports() {
           response = await fetch(`${baseURL}backend/fetchTickets.php?user=${user.userId}`);
         } else if (user?.accessId === "5") {
           response = await fetch(`${baseURL}backend/fetchTickets.php?support=${user.userId}`);
+        }else if (user?.accessId === "4") {
+          response = await fetch(`${baseURL}backend/fetchTickets.php?manager=${user.userId}`);
         } else {
           response = await fetch(`${baseURL}backend/fetchTickets.php`);
         }

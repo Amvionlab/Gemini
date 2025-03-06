@@ -54,7 +54,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $sla_priority = htmlspecialchars(trim($_POST['sla_priority'] ?? ''));
     $issue_nature = htmlspecialchars(trim($_POST['issue_nature'] ?? ''));
     $created_by = htmlspecialchars(trim($_POST['created_by'] ?? ''));
-    $status = 1;
+    $status = 2;
 
   
     $cl = (int) $customer_location; 
@@ -71,75 +71,85 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $customerData = $customerResult->fetch_assoc();
 
     if ($customerData) {
-        $locationValues = [$customerData['gcl_region'], $customerData['a_end'], $customerData['node']];
+        // Collect location values and filter out empty ones
+        $locationValues = array_filter([
+            $customerData['gcl_region'],
+            $customerData['a_end'],
+            $customerData['node']
+        ], function($value) {
+            return !empty($value); // Remove null or empty values
+        });
+    
         logMessage("Location values: " . implode(', ', $locationValues));
-
-        // Check for null or empty values
-        if (in_array(null, $locationValues, true) || in_array('', $locationValues, true)) {
-            logMessage("One or more location values are null or empty.");
-            echo json_encode(['status' => 'error', 'message' => 'One or more location values are null or empty.']);
-            exit;
-        }
-
-        // Check matching employee
-        $placeholders = implode(',', array_fill(0, count($locationValues), '?'));
-        $employeeQuery = "SELECT employee_id FROM employee WHERE location IN ($placeholders) AND department = 'RH'";
-        logMessage("Employee query: " . $employeeQuery);
-
-        $employeeStmt = $conn->prepare($employeeQuery);
-        if ($employeeStmt === false) {
-            logMessage("Prepare failed for employee query: " . $conn->error);
-            echo json_encode(['status' => 'error', 'message' => 'Prepare failed for employee query.']);
-            exit;
-        }
-
-        // Bind parameters dynamically
-        $types = str_repeat('s', count($locationValues)); // 's' for each string parameter
-        logMessage("Binding types: " . $types);
-        logMessage("Binding values: " . implode(', ', $locationValues));
-
-        $employeeStmt->bind_param($types, ...$locationValues); // Use the splat operator to unpack the array
-
-        if ($employeeStmt->execute()) {
-            $employeeResult = $employeeStmt->get_result();
-            $employeeData = $employeeResult->fetch_assoc();
-
-            if ($employeeData) {
-                $employee_id = $employeeData['employee_id'];
-                logMessage("Employee ID found: " . $employee_id);
-
-                // Get user ID from user table
-                $userQuery = "SELECT id FROM user WHERE employee_id = ?";
-                $userStmt = $conn->prepare($userQuery);
-                if ($userStmt === false) {
-                    logMessage("Prepare failed for user query: " . $conn->error);
-                    echo json_encode(['status' => 'error', 'message' => 'Prepare failed for user query.']);
-                    exit;
-                }
-                $userStmt->bind_param("s", $employee_id);
-                $userStmt->execute();
-                $userResult = $userStmt->get_result();
-                $userData = $userResult->fetch_assoc();
-
-                $getid = $userData['id'] ?? null;
-                logMessage("Fetched user ID: " . $getid);
-            } else {
-                logMessage("No matching employee found.");
-            }
+    
+        // If all values are empty, set $getid = 0 and skip the employee query
+        if (empty($locationValues)) {
+            logMessage("All location values are empty. Setting getid = 0.");
+            $getid = 0; // Set getid to 0
         } else {
-            logMessage("Employee query execution failed: " . $employeeStmt->error);
+            // Check matching employee
+            $placeholders = implode(',', array_fill(0, count($locationValues), '?'));
+            $employeeQuery = "SELECT employee_id FROM employee WHERE location IN ($placeholders) AND department = 'RH'";
+            logMessage("Employee query: " . $employeeQuery);
+    
+            $employeeStmt = $conn->prepare($employeeQuery);
+            if ($employeeStmt === false) {
+                logMessage("Prepare failed for employee query: " . $conn->error);
+                echo json_encode(['status' => 'error', 'message' => 'Prepare failed for employee query.']);
+                exit;
+            }
+    
+            // Bind parameters dynamically
+            $types = str_repeat('s', count($locationValues)); // 's' for each string parameter
+            logMessage("Binding types: " . $types);
+            logMessage("Binding values: " . implode(', ', $locationValues));
+    
+            $employeeStmt->bind_param($types, ...$locationValues); // Use the splat operator to unpack the array
+    
+            if ($employeeStmt->execute()) {
+                $employeeResult = $employeeStmt->get_result();
+                $employeeData = $employeeResult->fetch_assoc();
+    
+                if ($employeeData) {
+                    $employee_id = $employeeData['employee_id'];
+                    logMessage("Employee ID found: " . $employee_id);
+    
+                    // Get user ID from user table
+                    $userQuery = "SELECT id FROM user WHERE employee_id = ?";
+                    $userStmt = $conn->prepare($userQuery);
+                    if ($userStmt === false) {
+                        logMessage("Prepare failed for user query: " . $conn->error);
+                        echo json_encode(['status' => 'error', 'message' => 'Prepare failed for user query.']);
+                        exit;
+                    }
+                    $userStmt->bind_param("s", $employee_id);
+                    $userStmt->execute();
+                    $userResult = $userStmt->get_result();
+                    $userData = $userResult->fetch_assoc();
+    
+                    $getid = $userData['id'] ?? ''; // Default to 0 if no user ID is found
+                    logMessage("Fetched user ID: " . $getid);
+                } else {
+                    logMessage("No matching employee found.");
+                    $getid = ''; // Set getid to 0 if no employee is found
+                }
+            } else {
+                logMessage("Employee query execution failed: " . $employeeStmt->error);
+                $getid = ''; // Set getid to 0 if the query fails
+            }
+    
+            $employeeStmt->close();
         }
-
-        $employeeStmt->close();
     } else {
         logMessage("No customer data found for ID: " . $cl);
+        $getid = ''; // Set getid to 0 if no customer data is found
     }
+
 
     // Insert ticket data
     if (!empty($customer_name)) {
         logMessage("Preparing SQL statement for ticket insertion");
 
-        // Prepare and bind
         $stmt = $conn->prepare("INSERT INTO ticket (customer_name, customer_location, customer_department, contact_person, contact_number, contact_mail, nature_of_call, ticket_type, ticket_service, domain, sub_domain, sla_priority, issue_nature, path, created_by, assignees, status, post_Date) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)");
         if ($stmt === false) {
             logMessage("Database prepare failed: " . $conn->error);
@@ -167,6 +177,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $ticket_date
         );
 
+
         if ($stmt->execute()) {
             $tid = $conn->insert_id;
             logMessage("Ticket inserted successfully, ID: " . $tid);
@@ -176,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $toStatus = '1';
             $date = date('d-m-Y');
             $doneby = htmlspecialchars(trim($_POST['created_by'] ?? ''));
-            $emailResponse = sendmail(2, $tid);
+$emailResponse = sendmail(2, $tid);
             $logQuery = "INSERT INTO log (tid, done_by, from_status, to_status, date) VALUES (?, ?, ?, ?, ?)";
             $logStmt = $conn->prepare($logQuery);
             if ($logStmt === false) {
@@ -184,7 +195,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
                 echo json_encode(['status' => 'error', 'message' => 'Database prepare for log failed.']);
                 exit;
             }
-            $logStmt->bind_param("issss", $tid, $doneby, $fromStatus, $toStatus, $ticket_date);
+            $logStmt->bind_param("issss", $tid, $doneby, $fromStatus, $toStatus, $date);
 
             if ($logStmt->execute()) {
                 logMessage("Log inserted successfully");
