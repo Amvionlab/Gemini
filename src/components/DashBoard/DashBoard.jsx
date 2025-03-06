@@ -80,7 +80,12 @@ const App = () => {
         response = await fetch(
           `${baseURL}backend/update_status.php?support=${user.userId}&type=${value}`
         );
-      } else {
+      } 
+      else if (user && user.accessId === "4") {
+        response = await fetch(
+          `${baseURL}backend/update_status.php?manager=${user.userId}&type=${value}`
+        );
+      }else {
         response = await fetch(
           `${baseURL}backend/update_status.php?type=${value}`
         );
@@ -496,7 +501,6 @@ const App = () => {
               type="datetime-local"
               fullWidth
               margin="dense"
-              required
               InputLabelProps={{ shrink: true }}
               value={selectedDate}
               onChange={(e) => setSelectedDate(e.target.value)}
@@ -521,7 +525,6 @@ const App = () => {
               type="text-local"
               fullWidth
               margin="dense"
-              required
               InputLabelProps={{ shrink: true }}
               onChange={(e) => setDocket(e.target.value)}
             />
@@ -529,9 +532,17 @@ const App = () => {
           </DialogContent>
 
           <DialogActions>
-            <Button onClick={handleConfirm} autoFocus>
-              Yes
-            </Button>
+          <Button
+    onClick={
+        targetColumnTitle === "Closed" ? handleConfirm : handleConfirmMove
+    }
+    disabled={
+        targetColumnTitle === "Closed" && !selectedRCA
+    }
+    autoFocus
+>
+    Yes
+</Button>
             <Button onClick={handleCancelMove}>No</Button>
           </DialogActions>
         </Dialog>

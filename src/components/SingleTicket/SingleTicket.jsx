@@ -1940,7 +1940,6 @@ useEffect(() => {
                     onClick={handleConfirm}
                     autoFocus
                     disabled={
-                        (status[selectedStep]?.subName === "Scheduled" && !selectedDate) ||
                         (status[selectedStep]?.subName === "Closed" && !selectedRCA)
                     }
                 >
