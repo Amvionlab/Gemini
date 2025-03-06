@@ -1,17 +1,42 @@
 <?php
 include 'config.php';
 
-$cond = "1=1 AND ticket.status != 9";
-if (isset($_GET['user'])) {
-    $id = intval($_GET['user']);
-    $cond = "ticket.created_by = $id";
+if (isset($_GET['manager'])) {
+    $managerId = intval($_GET['manager']);
+    
+    // Fetch manager details
+    $sqlManager = "SELECT firstname, location FROM user WHERE id = $managerId AND usertype = 4";
+    $resultManager = $conn->query($sqlManager);
+    
+    if ($resultManager->num_rows > 0) {
+        $manager = $resultManager->fetch_assoc();
+        $managerName = $manager['firstname'];
+        $locations = explode(', ', $manager['location']); // Split locations into array
+        
+        // Prepare location conditions for SQL
+        $locationConditions = [];
+        foreach ($locations as $loc) {
+            $locationConditions[] = "customer.gcl_region LIKE '%$loc%'";
+        }
+        
+        $locationQuery = implode(' OR ', $locationConditions);
+        $cond = "($locationQuery)";
+    } else {
+        echo json_encode(array("message" => "No manager found"));
+        exit;
+    }
+} else {
+    $cond = "1=1 AND ticket.status != 9";
+    if (isset($_GET['user'])) {
+        $id = intval($_GET['user']);
+        $cond = "ticket.created_by = $id";
+    }
+    if (isset($_GET['support'])) {
+        $id = intval($_GET['support']);
+        $cond = "(FIND_IN_SET($id, ticket.assignees) OR ticket.created_by = $id)";
+    }
 }
-if (isset($_GET['support'])) {
-    $id = intval($_GET['support']);
-    // Use FIND_IN_SET to check if $id is in the assignees list
-    $cond = "(FIND_IN_SET($id, ticket.assignees) OR ticket.created_by = $id)";
-}
-// Fetch tickets
+
 $sqlTickets = "SELECT
             ticket.*,
             ticket_type.type AS type,
@@ -36,7 +61,6 @@ $sqlTickets = "SELECT
                     AND log.to_status = 4
                     ORDER BY log.id DESC
                     LIMIT 1
-
                 ),
                 ''
             ) AS closed_date
@@ -53,7 +77,7 @@ $sqlTickets = "SELECT
         LEFT JOIN
             domain ON ticket.domain = domain.id
         LEFT JOIN
-        client ON ticket.customer_name = client.id
+            client ON ticket.customer_name = client.id
         LEFT JOIN 
             customer ON ticket.customer_location = customer.id
         LEFT JOIN
@@ -70,7 +94,6 @@ $sqlTickets = "SELECT
             user AS creator ON ticket.created_by = creator.id
         LEFT JOIN
             user AS assignee ON FIND_IN_SET(assignee.id, ticket.assignees) > 0
-       
         WHERE
             $cond
         GROUP BY
@@ -78,16 +101,14 @@ $sqlTickets = "SELECT
         ORDER BY
             ticket.id DESC";
 
-
-
 $result = $conn->query($sqlTickets);
 
 if ($result->num_rows > 0) {
-  $tickets = [];
-  while($row = $result->fetch_assoc()) {
-    $tickets[] = $row;
-  }
-  echo json_encode($tickets);
+    $tickets = [];
+    while ($row = $result->fetch_assoc()) {
+        $tickets[] = $row;
+    }
+    echo json_encode($tickets);
 } else {
-  echo json_encode(array("message" => "No tickets found"));
+    echo json_encode(array("message" => "No tickets found"));
 }
