@@ -319,10 +319,11 @@ const App = () => {
     });
   };
 
+ 
   const filteredBranches =
-  search.trim() === "" ? uniqueBranches : uniqueBranches.filter((branch) =>
-    branch.toLowerCase().includes(search.toLowerCase())
-  );
+  search.trim() === ""
+    ? uniqueBranches.filter((branch) => branch) // Filter out null/undefined branches
+    : uniqueBranches.filter((branch) => branch && branch.toLowerCase().includes(search.toLowerCase()));
 
 
 
