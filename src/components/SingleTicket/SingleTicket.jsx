@@ -86,12 +86,24 @@ const SingleTicket = () => {
   const [vendors, setVendors] = useState([]);
   const [rcaList, setRcaList] = useState([]);
   const [isEditing, setIsEditing] = useState(false);
+  const [showInputField, setShowInputField] = useState(false);
+  const [newEngineer, setNewEngineer] = useState("");
+  const [filteredVendors, setFilteredVendors] = useState([]);
+  const [selectedOptions1, setSelectedOptions1] = useState([]); // Define selectedOptions1
+  const [availableVendors, setAvailableVendors] = useState([]);
 
 // Add missing functions
 const handleVendorModalClose = () => setIsVendorModalOpen(false);
-const handleVendorSelectChange = (selectedOptions) => {
-  setSelectedVendors(selectedOptions);
-  updateVendorInDB(ticketId, selectedOptions.map((v) => v.value));
+const handleVendorSelectChange = (selectedOptions1) => {
+  setSelectedVendors(selectedOptions1);
+  updateVendorInDB(ticketId, selectedOptions1.map((v) => v.value));
+
+  // Update available vendors dynamically
+  setAvailableVendors(
+    availableVendors.filter(
+      (vendor) => !selectedOptions1.some((selected) => selected.value === vendor.value)
+    )
+  );
 };
 
 function formatDate(dateString) {
@@ -100,11 +112,24 @@ function formatDate(dateString) {
   return date.toISOString().slice(0, 16); // "YYYY-MM-DDTHH:MM"
 }
 
-const handleVendorChipRemove = (vendorToRemove) => {
-  const updatedVendors = selectedVendors.filter((v) => v.value !== vendorToRemove.value);
-  setSelectedVendors(updatedVendors);
-  updateVendorInDB(ticketId, updatedVendors.map((v) => v.value));
+const handleVendorChipRemove = (removedVendor) => {
+  const updatedSelectedVendors = selectedVendors.filter(
+    (vendor) => vendor.value !== removedVendor.value
+  );
+
+  setSelectedVendors(updatedSelectedVendors);
+
+  // Add removed vendor back to availableVendors list
+  setAvailableVendors([...availableVendors, removedVendor]);
+
+  // Update database
+  updateVendorInDB(ticketId, updatedSelectedVendors.map((v) => v.value));
 };
+
+const vendorConfirm = () => {
+  console.log("Vendors selected:", selectedVendors);
+};
+
 const updateVendorInDB = async (ticketId, vendorIds) => {
   try {
     const response = await fetch(`${baseURL}backend/updateVendor.php`, {
@@ -121,6 +146,7 @@ const updateVendorInDB = async (ticketId, vendorIds) => {
     console.error("Error updating vendors:", error);
   }
 };
+
 const handleSave = async () => {
   if (!selectedDate) {
     toast.error("Please select a valid date.");
@@ -148,37 +174,88 @@ const handleSave = async () => {
   }
 };
 
-const vendorConfirm = () => {
-  console.log("Vendors selected:", selectedVendors);
+const handleAddEngineer = async () => {
+  if (newEngineer.trim() === "") {
+    alert("Please enter an engineer name.");
+    return;
+  }
+
+  try {
+    const response = await fetch(`${baseURL}/backend/addVendor.php`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: newEngineer }),
+    });
+
+    const result = await response.json();
+
+    if (result.success) {
+      fetchVendors();
+      fetchSelectedVendors();
+      setShowInputField(false);
+      setNewEngineer("");
+      alert("Engineer added successfully!");
+    
+    } else {
+      alert("Failed to add engineer.");
+    }
+  } catch (error) {
+    console.error("Error adding engineer:", error);
+    alert("Something went wrong.");
+  }
+};
+
+const fetchVendors = async () => {
+  try {
+    const response = await fetch(`${baseURL}backend/fetchVendor.php`);
+    const data = await response.json();
+
+    if (Array.isArray(data)) {
+      const vendorOptions = data.map((vendor) => ({
+        value: vendor.id,
+        label: vendor.name,
+      }));
+      setVendors(vendorOptions);
+    } else {
+      console.error("Invalid response format:", data);
+    }
+  } catch (error) {
+    console.error("Error fetching vendors:", error);
+  }
 };
 
 useEffect(() => {
-  fetch(`${baseURL}backend/fetchVendor.php`)
-    .then((response) => response.json())
-    .then((data) => {
-      if (Array.isArray(data)) {
-        const vendorOptions = data.map((vendor) => ({
-          value: vendor.id,
-          label: vendor.name,
-        }));
-        setVendors(vendorOptions);
-      } else {
-        console.error("Invalid response format:", data);
-      }
-    })
-    .catch((error) => console.error("Error fetching vendors:", error));
+  fetchVendors();
 }, [baseURL]);
 
+
+const fetchSelectedVendors = async () => {
+  try {
+    const response = await fetch(`${baseURL}backend/fetchSelectedVendors.php?id=${ticketId}`);
+    const data = await response.json();
+
+    setSelectedVendors(data.vendors || []);
+    setAvailableVendors(data.availableVendors || []);
+  } catch (error) {
+    console.error("Error fetching vendors:", error);
+  }
+};
+
 useEffect(() => {
-  fetch(`${baseURL}backend/fetchSelectedVendors.php?id=${ticketId}`)
-    .then((response) => response.json())
-    .then((data) => {
-      if (data.vendors) {
-        setSelectedVendors(data.vendors);
-      }
-    })
-    .catch((error) => console.error("Error fetching selected vendors:", error));
+  if (ticketId) {
+    fetchSelectedVendors();
+  }
 }, [ticketId, baseURL]);
+
+
+   // ✅ Filter out selected vendors from the dropdown options
+   useEffect(() => {
+    setFilteredVendors(
+      vendors.filter(vendor => !selectedVendors.some(selected => selected.value === vendor.value))
+    );
+  }, [vendors, selectedVendors]);
 
 useEffect(() => {
   const fetchRCAList = async () => {
@@ -290,28 +367,6 @@ useEffect(() => {
       ...prevFilters,
       [field]: { type, value },
     }));
-  };
-
-  const updateVendorsInDB = async (ticketId, vendorId) => {
-    try {
-      const response = await fetch(`${baseURL}backend/updateVendor.php`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          ticket_id: ticketId,
-          vendor_id: vendorId, // Ensure we send the correct vendor ID
-        }),
-      });
-  
-      const data = await response.json();
-      if (!response.ok) throw new Error(data.message || "Failed to update vendor");
-  
-      console.log(`✅ Vendor ID ${vendorId} updated successfully for Ticket ID ${ticketId}`);
-    } catch (error) {
-      console.error("❌ Error updating vendor:", error);
-    }
   };
 
   useEffect(() => {
@@ -1321,95 +1376,128 @@ useEffect(() => {
               </div>
             ) : null}
 
-{user && user.assign === "1" && selectedOptions ? (
-<div className="flex-col w-full lg:w-1/5 pr-4 pl-2 pt-2 mr-2">
-  {/* Header with Icon */}
-  <div className="flex items-center gap-2 mb-4">
-    <span className="text-lg font-semibold ml-2 text-prime">Engineers</span>
-    <button
-      type="button"
-      className="text-prime text-xl ml-3"
-      onClick={() => setIsVendorModalOpen(true)}
-    >
-      <MdSupervisedUserCircle className="text-prime text-2xl" />
-    </button>
-  </div>
-
-  {/* Selected Vendors Display */}
-  <div className="flex-nowrap overflow-x-auto bg-box rounded-lg gap-2 mb-3 p-2 mr-4 max-h-40 overflow-y-auto">
-    {selectedVendors.map((vendor) => (
-      <div
-        key={vendor.value}
-        className="flex items-center bg-green-500 text-white text-xs rounded-full px-2 py-1 whitespace-nowrap w-full mb-2"
+{user && user.assign === "1" && selectedOptions1 ? (
+  <div className="flex-col w-full lg:w-1/5 pr-4 pl-2 pt-2 mr-2">
+    {/* Header with Icon */}
+    <div className="flex items-center gap-2 mb-4">
+      <span className="text-lg font-semibold ml-2 text-prime">Engineers</span>
+      <button
+        type="button"
+        className="text-prime text-xl ml-3"
+        onClick={() => setIsVendorModalOpen(true)}
       >
-        <span
-          title={vendor.label}
-          className="flex-grow text-xs cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap w-[90%]"
+        <MdSupervisedUserCircle className="text-prime text-2xl" />
+      </button>
+    </div>
+
+    {/* Selected Vendors Display */}
+    <div className="flex-nowrap overflow-x-auto bg-box rounded-lg gap-2 mb-3 p-2 mr-4 max-h-40 overflow-y-auto">
+      {selectedVendors.map((vendor) => (
+        <div
+          key={vendor.value}
+          className="flex items-center bg-green-500 text-white text-xs rounded-full px-2 py-1 whitespace-nowrap w-full mb-2"
         >
-          {vendor.label}
-        </span>
-        <button
-          type="button"
-          className="flex-shrink-0 w-[10%] ml-2 text-black font-bold hover:text-gray-300"
-          onClick={() => handleVendorChipRemove(vendor)}
-        >
-          ×
-        </button>
-      </div>
-    ))}
-  </div>
-
-  {/* Vendor Selection Modal */}
-  {isVendorModalOpen && (
-    <div className="fixed inset-0 bg-black bg-opacity-50">
-    <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg h-auto shadow-lg w-11/12 sm:w-1/2 lg:w-1/3">
-      <h2 className="text-lg font-semibold mb-4">Select Engineers</h2>
-
-        {/* Vendor Dropdown (Multi-select) */}
-        <Select
-          isMulti
-          name="vendor"
-          options={vendors}
-          classNamePrefix="select"
-          className="text-xs bg-second border p-1 border-none rounded-md outline-none focus:border-bgGray focus:ring-bgGray"
-          onChange={(selectedOptions) => {
-            setSelectedVendors(selectedOptions);
-            updateVendorInDB(ticketId, selectedOptions.map((v) => v.value));
-          }}
-          value={selectedVendors}
-          placeholder="Select Engineers"
-        />
-
-        {/* Close Button */}
-        <div className="mt-4 flex justify-between">
+          <span
+            title={vendor.label}
+            className="flex-grow text-xs cursor-pointer overflow-hidden text-ellipsis whitespace-nowrap w-[90%]"
+          >
+            {vendor.label}
+          </span>
           <button
             type="button"
-            className="bg-gray-500 text-white px-4 py-2 rounded-md"
-            onClick={() => {
-              fetch(`${baseURL}backend/fetchSelectedVendors.php?id=${ticketId}`)
-                .then((response) => response.json())
-                .then((data) => {
-                  setSelectedVendors(data.vendors || []);
-                })
-                .catch((error) => console.error("Error fetching selected vendors:", error));
-              setIsVendorModalOpen(false);
-            }}
+            className="flex-shrink-0 w-[10%] ml-2 text-black font-bold hover:text-gray-300"
+            onClick={() => handleVendorChipRemove(vendor)}
           >
-            Cancel
-          </button>
-          <button
-            type="button"
-            className="bg-red-500 text-white px-4 py-2 rounded-md"
-            onClick={() => setIsVendorModalOpen(false)}
-          >
-            Close
+            ×
           </button>
         </div>
-      </div>
+      ))}
     </div>
-  )}
-</div>
-    ) : null}
+
+    {/* Vendor Selection Modal */}
+    {isVendorModalOpen && (
+  <div className="fixed inset-0 bg-black bg-opacity-50">
+    <div className="absolute top-1/2 left-3/4 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg h-auto shadow-lg w-11/12 sm:w-1/2 lg:w-1/3">
+      <div className="flex justify-between items-center gap-2">
+        <h2 className="text-lg font-semibold mb-4">Select Engineers</h2>
+        <button 
+          className="ml-2 px-2 py-1 bg-prime text-box font-medium rounded hover:bg-prime-dark focus:outline-none focus:ring-2 focus:ring-prime-light focus:ring-opacity-75 transition duration-150 ease-in-out text-xs"
+          onClick={() => setShowInputField(!showInputField)}
+        >
+          Add Engineer +
+        </button>
+      </div>
+
+      {/* ✅ Show Input Field to Add Engineer */}
+      {showInputField && (
+        <div className="mb-4">
+          <input
+            type="text"
+            placeholder="Enter Engineer Name"
+            value={newEngineer}
+            onChange={(e) => setNewEngineer(e.target.value)}
+            className="border p-2 rounded-md text-xs w-full"
+          />
+          <button
+            className="mt-2 bg-prime text-white px-4 py-1 rounded-md text-xs"
+            onClick={handleAddEngineer}
+          >
+            Submit
+          </button>
+        </div>
+      )}
+
+      {/* ✅ Use `availableVendors` directly instead of filtering */}
+      <Select
+        isMulti
+        name="vendor"
+        options={availableVendors}  
+        classNamePrefix="select"
+        className="text-xs bg-second border p-1 border-none rounded-md outline-none focus:border-bgGray focus:ring-bgGray"
+        onChange={(selectedOptions1) => {
+          setSelectedVendors(selectedOptions1);
+          updateVendorInDB(ticketId, selectedOptions1.map((v) => v.value));
+          
+          // ✅ Update `availableVendors` dynamically
+          setAvailableVendors(
+            availableVendors.filter(v => !selectedOptions1.some(sv => sv.value === v.value))
+          );
+        }}
+        value={selectedVendors}
+        placeholder="Select Engineers"
+      />
+
+      {/* Close Buttons */}
+      <div className="mt-4 flex justify-between">
+        <button
+          type="button"
+          className="bg-gray-500 text-white px-4 py-2 rounded-md"
+          onClick={() => {
+            fetch(`${baseURL}backend/fetchSelectedVendors.php?id=${ticketId}`)
+              .then((response) => response.json())
+              .then((data) => {
+                setSelectedVendors(data.vendors || []);
+                setAvailableVendors(data.availableVendors || []);
+              })
+              .catch((error) => console.error("Error fetching selected vendors:", error));
+            setIsVendorModalOpen(false);
+          }}
+        >
+          Cancel
+        </button>
+        <button
+          type="button"
+          className="bg-red-500 text-white px-4 py-2 rounded-md"
+          onClick={() => setIsVendorModalOpen(false)}
+        >
+          Close
+        </button>
+          </div>
+        </div>
+      </div>
+    )}
+  </div>
+) : null}
           </div>
           
         </div>

@@ -1,0 +1,5 @@
+2025-03-06 09:45:03 - Script started
+2025-03-06 09:45:03 - No matching employee found for gcl_region: 
+2025-03-06 09:45:03 - Preparing SQL statement for ticket insertion
+2025-03-06 09:45:03 - Ticket inserted successfully, ID: 228
+2025-03-06 09:45:08 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}

@@ -187,7 +187,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $toStatus = '1';
             $date = date('d-m-Y');
             $doneby = htmlspecialchars(trim($_POST['created_by'] ?? ''));
-$emailResponse = sendmail(2, $tid);
+            $emailResponse = sendmail(2, $tid);
             $logQuery = "INSERT INTO log (tid, done_by, from_status, to_status, date) VALUES (?, ?, ?, ?, ?)";
             $logStmt = $conn->prepare($logQuery);
             if ($logStmt === false) {
@@ -221,7 +221,7 @@ $emailResponse = sendmail(2, $tid);
     }
 
     $conn->close();
-    echo json_encode($response);
+    echo json_encode(value: $response);
     logMessage("Response sent: " . json_encode($response));
 }
 ?>
