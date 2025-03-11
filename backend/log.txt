@@ -1,3 +1,4 @@
+<<<<<<< HEAD
 2025-03-07 13:02:12 - Script started
 2025-03-07 13:02:12 - GCL Region: Delhi & NCR
 2025-03-07 13:02:12 - Employee query: SELECT employee_id FROM employee WHERE FIND_IN_SET(?, location) > 0 AND department = 'RH'
@@ -50,3 +51,10 @@
 2025-03-10 07:58:28 - Ticket inserted successfully, ID: 446
 2025-03-10 07:58:29 - Log inserted successfully
 2025-03-10 07:58:29 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+=======
+2025-03-06 09:45:03 - Script started
+2025-03-06 09:45:03 - No matching employee found for gcl_region: 
+2025-03-06 09:45:03 - Preparing SQL statement for ticket insertion
+2025-03-06 09:45:03 - Ticket inserted successfully, ID: 228
+2025-03-06 09:45:08 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+>>>>>>> fb9f6a553b115eb0bc7ba5ff617067b0b6a1411e

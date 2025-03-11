@@ -3,7 +3,7 @@ header("Access-Control-Allow-Origin: *");
 header("Access-Control-Allow-Methods: POST, OPTIONS");
 header("Access-Control-Allow-Headers: Content-Type");
 
-include 'config.php'; 
+include 'config.php';
 
 if ($_SERVER['REQUEST_METHOD'] === 'OPTIONS') {
     http_response_code(200);
@@ -20,12 +20,17 @@ if (!isset($data["ticket_id"]) || !isset($data["vendor_ids"])) {
 $ticket_id = intval($data["ticket_id"]);
 $vendor_ids = implode(",", array_map("intval", $data["vendor_ids"]));
 
-$sql = "UPDATE ticket SET vendor_id='$vendor_ids' WHERE id=$ticket_id";
-if ($conn->query($sql) === TRUE) {
+// Update the ticket with selected vendor IDs
+$sql = "UPDATE ticket SET vendor_id=? WHERE id=?";
+$stmt = $conn->prepare($sql);
+$stmt->bind_param("si", $vendor_ids, $ticket_id);
+
+if ($stmt->execute()) {
     echo json_encode(["message" => "Vendors updated successfully"]);
 } else {
     echo json_encode(["error" => "Error updating ticket: " . $conn->error]);
 }
 
+$stmt->close();
 $conn->close();
 ?>
