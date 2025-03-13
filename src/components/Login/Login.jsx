@@ -112,7 +112,7 @@ const Login = ({ onLogin }) => {
                 </div>
               </div>
               <footer className='footer text-login text-sm font-normal'>
-                <h6>&#169;2024 Amvion Labs Private Limited . All Rights Reserved</h6>
+                <h6>&#169;2025 Amvion Labs Private Limited . All Rights Reserved</h6>
               </footer>
             </div>
           </div>

@@ -43,18 +43,9 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     
     $query = "
     SELECT 
-        ticket.*,
-        ticket_type.type AS ticket_type_value,
-        ticket_status.status AS ticket_status_name,
-        ticket_noc.name AS ticket_noc_value,
-        ticket_service.name AS ticket_service_value,
-        domain.name AS ticket_domain_value,
+        ticket.id,ticket.status,
         client.name AS ticket_customer_value,
-        location.name AS ticket_location_value,
         CONCAT(customer.gcl_region,'-',customer.node, '-',customer.a_end) AS customer_branch,
-        sla.level AS ticket_sla_value,
-        department.name AS ticket_department_value,
-        sub_domain.name AS ticket_subdomain_value,
         CASE
             WHEN ticket.post_date >= NOW() - INTERVAL 1 DAY THEN 1
             WHEN ticket.post_date >= NOW() - INTERVAL 2 DAY AND ticket.post_date < NOW() - INTERVAL 1 DAY THEN 2
@@ -63,27 +54,11 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     FROM 
         ticket
     LEFT JOIN 
-        ticket_type ON ticket.ticket_type = ticket_type.id
-    LEFT JOIN 
-        ticket_noc ON ticket.nature_of_call = ticket_noc.id
-    LEFT JOIN 
-        ticket_service ON ticket.ticket_service = ticket_service.id
-    LEFT JOIN 
         ticket_status ON ticket.status = ticket_status.id
-    LEFT JOIN 
-        domain ON ticket.domain = domain.id
-    LEFT JOIN 
+    LEFT JOIN
         client ON ticket.customer_name = client.id
     LEFT JOIN 
         customer ON ticket.customer_location = customer.id
-    LEFT JOIN 
-        location ON ticket.customer_location = location.id
-    LEFT JOIN 
-        department ON ticket.customer_department = department.id
-    LEFT JOIN 
-        sla ON ticket.sla_priority = sla.id
-    LEFT JOIN 
-        sub_domain ON ticket.sub_domain = sub_domain.id
     WHERE 
         $cond";
 
