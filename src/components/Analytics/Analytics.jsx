@@ -248,7 +248,7 @@ function Reports() {
                           " customer",
                           " category",
                           " subcategory",
-                          " Branch"
+                          " Region"
                         ][index]
                       }
                     </span>

@@ -49,7 +49,7 @@ $sqlTickets = "SELECT
             sla.level AS sla,
             rca.name AS rca,
             CONCAT(creator.firstname, ' ', creator.lastname) AS name,
-            CONCAT(customer.gcl_region,'-',customer.node, '-',customer.a_end) AS customer_branch,
+            customer.gcl_region AS customer_branch,
             department.name AS department,
             sub_domain.name AS subdomain,
             GROUP_CONCAT(DISTINCT CONCAT(assignee.firstname, ' ', assignee.lastname) SEPARATOR ' & ') AS assignees,
