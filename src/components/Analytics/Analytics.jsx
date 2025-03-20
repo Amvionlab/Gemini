@@ -330,7 +330,7 @@ function Reports() {
 <div
   className="font-semibold py-1 px-2 rounded border border-[red] text-red-600 hover:bg-red-600 hover:text-white cursor-pointer transition-all duration-150"
   onClick={() => {
-    setSelectedLabels([[], [], [], [], [], [], []]);
+    setSelectedLabels([[], [], [], [], [], []]);
     setFromDate("");
     setToDate("");
     setSelectedDateFilter("createdAt");
