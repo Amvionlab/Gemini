@@ -28,7 +28,7 @@ function Setup() {
       { title: "Customer Location", icon: <FontAwesomeIcon icon={faUsers} />, path: "/admin/customer" },
       { title: "Department", icon: <FontAwesomeIcon icon={faBuilding} />, path: "/admin/department" },
       { title: "Employees", icon: <FiUsers icon={FiUsers} />, path: "/admin/employee" },
-      { title: "Vendor", icon: <FiUsers icon={FiUsers} />, path: "/admin/vendor" },
+      { title: "Engineer", icon: <FiUsers icon={FiUsers} />, path: "/admin/engineer" },
     ],
     BASIC: [
       { title: "Domain", icon: <FontAwesomeIcon icon={faGlobe} />, path: "/admin/domain" },

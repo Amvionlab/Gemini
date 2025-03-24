@@ -58,3 +58,69 @@
 2025-03-06 09:45:03 - Ticket inserted successfully, ID: 228
 2025-03-06 09:45:08 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
 >>>>>>> fb9f6a553b115eb0bc7ba5ff617067b0b6a1411e
+2025-03-24 06:13:27 - Script started
+2025-03-24 06:13:27 - No customer data found for ID: 0
+2025-03-24 06:13:27 - Preparing SQL statement for ticket insertion
+2025-03-24 06:13:27 - Ticket inserted successfully, ID: 729
+2025-03-24 06:13:27 - Log inserted successfully
+2025-03-24 06:13:27 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-24 06:18:21 - Script started
+2025-03-24 06:18:21 - No customer data found for ID: 0
+2025-03-24 06:18:21 - Preparing SQL statement for ticket insertion
+2025-03-24 06:18:21 - Ticket inserted successfully, ID: 730
+2025-03-24 06:18:21 - Log inserted successfully
+2025-03-24 06:18:21 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-24 06:18:56 - Script started
+2025-03-24 06:18:56 - No customer data found for ID: 0
+2025-03-24 06:18:56 - Preparing SQL statement for ticket insertion
+2025-03-24 06:18:56 - Ticket inserted successfully, ID: 731
+2025-03-24 06:18:56 - Log inserted successfully
+2025-03-24 06:18:56 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-24 06:21:19 - Script started
+2025-03-24 06:21:19 - No customer data found for ID: 0
+2025-03-24 06:21:19 - Preparing SQL statement for ticket insertion
+2025-03-24 06:21:19 - Ticket inserted successfully, ID: 732
+2025-03-24 06:21:19 - Log inserted successfully
+2025-03-24 06:21:19 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-24 06:21:51 - Script started
+2025-03-24 06:21:51 - No customer data found for ID: 0
+2025-03-24 06:21:51 - Preparing SQL statement for ticket insertion
+2025-03-24 06:21:51 - Ticket inserted successfully, ID: 733
+2025-03-24 06:21:51 - Log inserted successfully
+2025-03-24 06:21:51 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-24 06:27:16 - Script started
+2025-03-24 06:27:16 - GCL Region: Gujarat
+2025-03-24 06:27:16 - Employee query: SELECT employee_id FROM employee WHERE FIND_IN_SET(?, location) > 0 AND department = 'RH'
+2025-03-24 06:27:16 - Employee ID found: A1221
+2025-03-24 06:27:16 - Fetched user ID: 15
+2025-03-24 06:27:16 - Preparing SQL statement for ticket insertion
+2025-03-24 06:27:16 - Ticket inserted successfully, ID: 734
+2025-03-24 06:27:18 - Log inserted successfully
+2025-03-24 06:27:18 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-24 06:29:35 - Script started
+2025-03-24 06:29:35 - GCL Region: AP & Telangana
+2025-03-24 06:29:35 - Employee query: SELECT employee_id FROM employee WHERE FIND_IN_SET(?, location) > 0 AND department = 'RH'
+2025-03-24 06:29:35 - Employee ID found: 395
+2025-03-24 06:29:35 - Fetched user ID: 10
+2025-03-24 06:29:35 - Preparing SQL statement for ticket insertion
+2025-03-24 06:29:35 - Ticket inserted successfully, ID: 735
+2025-03-24 06:29:36 - Log inserted successfully
+2025-03-24 06:29:36 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-24 07:30:32 - Script started
+2025-03-24 07:30:32 - GCL Region: AP & Telangana
+2025-03-24 07:30:32 - Employee query: SELECT employee_id FROM employee WHERE FIND_IN_SET(?, location) > 0 AND department = 'RH'
+2025-03-24 07:30:32 - Employee ID found: 395
+2025-03-24 07:30:32 - Fetched user ID: 10
+2025-03-24 07:30:32 - Preparing SQL statement for ticket insertion
+2025-03-24 07:30:32 - Ticket inserted successfully, ID: 736
+2025-03-24 07:30:34 - Log inserted successfully
+2025-03-24 07:30:34 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}
+2025-03-24 08:11:34 - Script started
+2025-03-24 08:11:34 - GCL Region: AP & Telangana
+2025-03-24 08:11:34 - Employee query: SELECT employee_id FROM employee WHERE FIND_IN_SET(?, location) > 0 AND department = 'RH'
+2025-03-24 08:11:34 - Employee ID found: 395
+2025-03-24 08:11:34 - Fetched user ID: 10
+2025-03-24 08:11:34 - Preparing SQL statement for ticket insertion
+2025-03-24 08:11:34 - Ticket inserted successfully, ID: 737
+2025-03-24 08:11:36 - Log inserted successfully
+2025-03-24 08:11:36 - Response sent: {"status":"success","message":"Form submitted, data inserted successfully, and notification added!"}

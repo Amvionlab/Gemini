@@ -201,7 +201,7 @@ if ($customerData && !empty($customerData['gcl_region'])) {
     }
 
     $conn->close();
-    echo json_encode(value: $response);
+    echo json_encode($response);
     logMessage("Response sent: " . json_encode($response));
 }
 ?>

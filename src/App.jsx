@@ -20,7 +20,7 @@ import Department from "./components/Admin/Department";
 import Client from "./components/Admin/Client";
 import Customer from "./components/Admin/Customer";
 import Employee from "./components/Admin/Employee";
-import Vendor from "./components/Admin/Vendor";
+import Engineer from "./components/Admin/Engineer";
 import Domain from "./components/Admin/Domain";
 import SubDomain from "./components/Admin/SubDomain";
 import Location from "./components/Admin/Location";
@@ -147,7 +147,7 @@ function App() {
                       <Route path="/admin/client" element={<Client />} />
                       <Route path="/admin/customer" element={<Customer />} />
                       <Route path="/admin/employee" element={<Employee />} />
-                      <Route path="/admin/vendor" element={<Vendor />} />
+                      <Route path="/admin/Engineer" element={<Engineer />} />
                       <Route path="/admin/access" element={<Access />} />
                       <Route
                         path="/admin/department"

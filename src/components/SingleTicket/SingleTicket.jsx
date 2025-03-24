@@ -50,6 +50,7 @@ import {
 import { UserContext } from "../UserContext/UserContext";
 import { useTicketContext } from "../UserContext/TicketContext";
 import "./singleticket.css";
+import { use } from "react";
 
 const SingleTicket = () => {
   const { ticketId } = useTicketContext();
@@ -91,7 +92,10 @@ const SingleTicket = () => {
   const [filteredVendors, setFilteredVendors] = useState([]);
   const [selectedOptions1, setSelectedOptions1] = useState([]); // Define selectedOptions1
   const [availableVendors, setAvailableVendors] = useState([]);
-
+  const [fundAmount, setFundAmount] = useState("");
+  const [ReqAmount, setReqAmount] = useState("");
+   const [tickets, setTickets] = useState([]);
+   
 // Add missing functions
 const handleVendorModalClose = () => setIsVendorModalOpen(false);
 const handleVendorSelectChange = (selectedOptions1) => {
@@ -105,7 +109,7 @@ const handleVendorSelectChange = (selectedOptions1) => {
     )
   );
 };
-
+const todayDate = new Date().toISOString().split("T")[0]; // Get current date (YYYY-MM-DD)
 function formatDate(dateString) {
   if (!dateString) return ""; // Handle missing date
   const date = new Date(dateString);
@@ -175,8 +179,8 @@ const handleSave = async () => {
 };
 
 const handleAddEngineer = async () => {
-  if (newEngineer.trim() === "") {
-    alert("Please enter an engineer name.");
+  if (!newEngineer.name || !newEngineer.vendor_id || !newEngineer.mobile || !newEngineer.location || !newEngineer.address || !newEngineer.state) {
+    alert("Please fill all fields.");
     return;
   }
 
@@ -186,7 +190,7 @@ const handleAddEngineer = async () => {
       headers: {
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name: newEngineer }),
+      body: JSON.stringify(newEngineer),
     });
 
     const result = await response.json();
@@ -195,11 +199,10 @@ const handleAddEngineer = async () => {
       fetchVendors();
       fetchSelectedVendors();
       setShowInputField(false);
-      setNewEngineer("");
+      setNewEngineer({ name: "", vendor_id: "", mobile: "", location: "", address: "", state: "" });
       alert("Engineer added successfully!");
-    
     } else {
-      alert("Failed to add engineer.");
+      alert(result.message || "Failed to add engineer.");
     }
   } catch (error) {
     console.error("Error adding engineer:", error);
@@ -980,10 +983,45 @@ useEffect(() => {
     }
   };
 
-  const handleStepClick = (step) => {
-    setSelectedStep(step);
-    setOpen(true);
+  const handleStepClick = async (index) => {
+    setSelectedStep(index);
+    
+    const clickedStatus = status[index]?.subName;
+  
+    if (clickedStatus === "Approved") {
+      try {
+        const fundAmountFromDb = await fetchFundAmount(ticketId);
+        if (fundAmountFromDb) {
+          setFundAmount(fundAmountFromDb);  // ✅ Set the fund amount
+        }
+      } catch (error) {
+        console.error("Failed to fetch fund amount:", error);
+      }
+    }
+  
+    setOpen(true); // Open the dialog
   };
+  
+  
+  const fetchFundAmount = async (ticketId) => {
+    try {
+      const response = await fetch(`${baseURL}backend/getFundAmt.php?ticket_id=${ticketId}`);
+      const data = await response.json();
+  
+      if (response.ok && data?.fund_raised !== undefined) {
+        console.log("fr",data.fund_raised);
+        setReqAmount(data.fund_raised);
+        return data.fund_raised; // Ensure correct key
+      } else {
+        console.error("Invalid response structure:", data);
+        return "";
+      }
+    } catch (error) {
+      console.error("Error fetching fund amount:", error);
+      return "";
+    }
+  };
+  
 
   const assignConfirm = async () => {
     const newStatus = 2;
@@ -1127,6 +1165,94 @@ useEffect(() => {
     setAddEntry(true);
   };
 
+ const fetchTickets = async (value) => {
+    try {
+      let response;
+      if (user && user.accessId === "2") {
+        response = await fetch(
+          `${baseURL}backend/update_status.php?user=${user.userId}&type=${value}`
+        );
+      } else if (user && user.accessId === "5") {
+        response = await fetch(
+          `${baseURL}backend/update_status.php?support=${user.userId}&type=${value}`
+        );
+      } 
+      else if (user && user.accessId === "4") {
+        response = await fetch(
+          `${baseURL}backend/update_status.php?manager=${user.userId}&type=${value}`
+        );
+      }else {
+        response = await fetch(
+          `${baseURL}backend/update_status.php?type=${value}`
+        );
+      }
+
+      const data = await response.json();
+      setTickets(data);
+    } catch (error) {
+      console.error("Error fetching tickets:", error);
+    }
+  };
+
+  const handleFundRequest = async () => {
+    try {
+      const params = new URLSearchParams({
+        ticket_id: ticketId,
+        fund_amount: Number(fundAmount) * 10,
+        done_by: user?.name || "System",
+        move_date: todayDate, // Use today's date
+      });
+      console.log("Sending params:", params.toString());
+      const response = await fetch(`${baseURL}backend/updatefundamtsingleticket.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: params,
+      });
+       console.log("response", response);
+      if (response.ok) {
+        console.log("Fund request submitted!");
+        return true; // ← success
+      } else {
+        console.error("Failed to submit fund request");
+        return false;
+      }
+    } catch (error) {
+      console.error("Error submitting fund request:", error);
+      return false;
+    }
+  };
+
+  const handleApprovedAmount = async () => {
+    try {
+      const response = await fetch(`${baseURL}backend/updateapprovedamt.php`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" }, // Sending JSON data
+        body: JSON.stringify({
+          ticket_id: ticketId,         // Pass the ticket ID
+          fund_amount: fundAmount,     // Pass the approved fund amount
+        }),
+      });
+  
+      if (response.ok) {
+        const result = await response.json();
+        if (result.success) {
+          console.log("Approved fund amount updated successfully.");
+          return true; // success
+        } else {
+          console.error("Error from server:", result.error);
+          return false;
+        }
+      } else {
+        console.error("Failed to update approved fund amount. Status:", response.status);
+        return false;
+      }
+    } catch (error) {
+      console.error("Error updating approved fund amount:", error);
+      return false;
+    }
+  };
+  
+ 
   return (
     <div className="bg-second font-sui h-full overflow-hidden p-0.5">
       {user && user.ticketaction === "1" && (
@@ -1417,7 +1543,7 @@ useEffect(() => {
     {/* Vendor Selection Modal */}
     {isVendorModalOpen && (
   <div className="fixed inset-0 bg-black bg-opacity-50">
-    <div className="absolute top-1/2 left-3/4 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg h-auto shadow-lg w-11/12 sm:w-1/2 lg:w-1/3">
+    <div className="absolute top-1/2 left-2/3 transform -translate-x-1/2 -translate-y-1/2 bg-white p-6 rounded-lg h-auto shadow-lg w-11/12 sm:w-1/2 lg:w-1/2">
       <div className="flex justify-between items-center gap-2">
         <h2 className="text-lg font-semibold mb-4">Select Engineers</h2>
         <button 
@@ -1428,24 +1554,65 @@ useEffect(() => {
         </button>
       </div>
 
-      {/* ✅ Show Input Field to Add Engineer */}
-      {showInputField && (
-        <div className="mb-4">
-          <input
-            type="text"
-            placeholder="Enter Engineer Name"
-            value={newEngineer}
-            onChange={(e) => setNewEngineer(e.target.value)}
-            className="border p-2 rounded-md text-xs w-full"
-          />
-          <button
-            className="mt-2 bg-prime text-white px-4 py-1 rounded-md text-xs"
-            onClick={handleAddEngineer}
-          >
-            Submit
-          </button>
-        </div>
-      )}
+     {/* ✅ Show Input Fields to Add Engineer */}
+{showInputField && (
+  <div className="mb-4">
+    <div className="flex gap-2">
+    <input
+      type="text"
+      placeholder="Enter Engineer Name"
+      value={newEngineer.name}
+      onChange={(e) => setNewEngineer({ ...newEngineer, name: e.target.value })}
+      className="border p-2 rounded-md text-xs w-full mt-2"
+    />
+    <input
+      type="text"
+      placeholder="Enter ID"
+      value={newEngineer.vendor_id}
+      onChange={(e) => setNewEngineer({ ...newEngineer, vendor_id: e.target.value })}
+      className="border p-2 rounded-md text-xs w-full mt-2"
+    />
+    </div>
+    <div className="flex gap-2">
+    <input
+      type="text"
+      placeholder="Enter Mobile"
+      value={newEngineer.mobile}
+      onChange={(e) => setNewEngineer({ ...newEngineer, mobile: e.target.value })}
+      className="border p-2 rounded-md text-xs w-full mt-2"
+    />
+    <input
+      type="text"
+      placeholder="Enter IFSC"
+      value={newEngineer.location}
+      onChange={(e) => setNewEngineer({ ...newEngineer, location: e.target.value })}
+      className="border p-2 rounded-md text-xs w-full mt-2"
+    />
+    </div>
+    <div className="flex gap-2">
+    <input
+      type="text"
+      placeholder="Enter Branch Name"
+      value={newEngineer.address}
+      onChange={(e) => setNewEngineer({ ...newEngineer, address: e.target.value })}
+      className="border p-2 rounded-md text-xs w-full mt-2"
+    />
+    <input
+      type="text"
+      placeholder="Enter Account Number"
+      value={newEngineer.state}
+      onChange={(e) => setNewEngineer({ ...newEngineer, state: e.target.value })}
+      className="border p-2 rounded-md text-xs w-full mt-2"
+    />
+    </div>
+    <button
+      className="mt-2 bg-prime text-white px-4 py-1 rounded-md text-xs"
+      onClick={handleAddEngineer}
+    >
+      Submit
+    </button>
+  </div>
+)}
 
       {/* ✅ Use `availableVendors` directly instead of filtering */}
       <Select
@@ -1972,68 +2139,149 @@ useEffect(() => {
       <Dialog open={open} onClose={() => setOpen(false)} aria-labelledby="alert-dialog-title" aria-describedby="alert-dialog-description">
             <DialogTitle id="alert-dialog-title">{"Change Ticket Status"}</DialogTitle>
             <DialogContent>
-                <DialogContentText id="alert-dialog-description">
-                    Are you sure you want to change the ticket status to{" "}
-                    {status[selectedStep]?.subName}?
-                </DialogContentText>
-                <br />
+    <DialogContentText id="alert-dialog-description">
+        Are you sure you want to change the ticket status to{" "}
+        {status[selectedStep]?.subName}?
+    </DialogContentText>
+    <br />
 
-                {/* Date Picker (Always Shown) */}
-                <TextField
-                    label="Select Date"
-                    type="datetime-local"
-                    fullWidth
-                    margin="dense"
-                    required
-                    InputLabelProps={{ shrink: true }}
-                    value={selectedDate}
-                    onChange={(e) => setSelectedDate(e.target.value)}
-                />
+    {/* Date Picker (Always Shown) */}
+    <TextField
+        label="Select Date"
+        type="datetime-local"
+        fullWidth
+        margin="dense"
+        required
+        InputLabelProps={{ shrink: true }}
+        value={selectedDate}
+        onChange={(e) => setSelectedDate(e.target.value)}
+    />
 
-                {/* RCA Dropdown (Only show when status is 'Closed') */}
-                {status[selectedStep]?.subName === "Closed" && (
-                    <TextField
-                        select
-                        label="Select RCA"
-                        fullWidth
-                        margin="dense"
-                        required
-                        value={selectedRCA}
-                        onChange={(e) => setSelectedRCA(e.target.value)}
-                    >
-                        <MenuItem value="">Select RCA</MenuItem>
-                        {rcaList.map((rca) => (
-                            <MenuItem key={rca.id} value={rca.id}>
-                                {rca.name}
-                            </MenuItem>
-                        ))}
-                    </TextField>
-                )}
-                {status[selectedStep]?.subName === "Closed" && (
-                    <TextField
-                    label="Docket No :"
-                    type="text-local"
-                    fullWidth
-                    margin="dense"
-                    required
-                    InputLabelProps={{ shrink: true }}
-                    onChange={(e) => setDocket(e.target.value)}
-                  />
-                )}
-            </DialogContent>
+    {/* RCA Dropdown (Only show when status is 'Closed') */}
+    {status[selectedStep]?.subName === "Closed" && (
+        <TextField
+            select
+            label="Select RCA"
+            fullWidth
+            margin="dense"
+            required
+            value={selectedRCA}
+            onChange={(e) => setSelectedRCA(e.target.value)}
+        >
+            <MenuItem value="">Select RCA</MenuItem>
+            {rcaList.map((rca) => (
+                <MenuItem key={rca.id} value={rca.id}>
+                    {rca.name}
+                </MenuItem>
+            ))}
+        </TextField>
+    )}
 
-            <DialogActions>
-                <Button onClick={() => setOpen(false)}>Cancel</Button>
-                <Button
-                    onClick={handleConfirm}
-                    autoFocus
-                    disabled={
-                        (status[selectedStep]?.subName === "Closed" && !selectedRCA)
-                    }
-                >
-                    Confirm
-                </Button>
-            </DialogActions>
+    {status[selectedStep]?.subName === "Closed" && (
+        <TextField
+            label="Docket No :"
+            type="text-local"
+            fullWidth
+            margin="dense"
+            required
+            InputLabelProps={{ shrink: true }}
+            onChange={(e) => setDocket(e.target.value)}
+        />
+    )}
+
+    {/* 👉 Fund Req Section */}
+    {status[selectedStep]?.subName === "Fund Req" && (
+        <div className="flex items-center gap-2 mt-4 w-60">
+            <TextField
+                label="Enter Amount"
+                type="number"
+                variant="outlined"
+                value={fundAmount}
+                onChange={(e) => setFundAmount(Number(e.target.value))}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                margin="dense"
+            />
+
+            <span className="text-xl font-bold">=</span>
+
+            <TextField
+                label="Total"
+                type="number"
+                variant="outlined"
+                value={fundAmount ? fundAmount * 10 : ""}
+                InputProps={{ readOnly: true }}
+                InputLabelProps={{ shrink: true }}
+                fullWidth
+                margin="dense"
+            />
+        </div>
+    )}
+
+{status[selectedStep]?.subName === "Approved" && (
+  <div className="flex flex-col gap-2 mt-4 w-60">
+    <TextField
+  label="Fund Requested Amount"
+  type="number"
+  variant="outlined"
+  value={ReqAmount}
+  disabled
+  fullWidth
+  margin="dense"
+  InputLabelProps={{ shrink: true }}
+/>
+
+    <TextField
+  label="Approved Amount"
+  type="number"
+  variant="outlined"
+  onChange={(e) => setFundAmount(e.target.value)}
+  fullWidth
+  margin="dense"
+  InputLabelProps={{ shrink: true }}
+/>
+
+  </div>
+)}
+
+
+</DialogContent>
+
+<DialogActions>
+  <Button onClick={() => setOpen(false)}>Cancel</Button>
+  
+  <Button
+  onClick={async () => {
+    if (status[selectedStep]?.subName === "Fund Req") {
+      const success = await handleFundRequest();
+      if (success) {
+        handleConfirm();
+        setOpen(false);
+      }
+    } else if (status[selectedStep]?.subName === "Approved") {
+      const success = await handleApprovedAmount(); // ← This one!
+      if (success) {
+        handleConfirm();
+        setOpen(false);
+      }
+    } else {
+      handleConfirm();
+      setOpen(false);
+    }
+  }}
+  autoFocus
+  disabled={
+    (status[selectedStep]?.subName === "Closed" && !selectedRCA) ||
+    (status[selectedStep]?.subName === "Fund Req" && !fundAmount) ||
+    (status[selectedStep]?.subName === "Approved" && !fundAmount)
+  }
+>
+  Confirm
+</Button>
+
+
+</DialogActions>
+
         </Dialog>
     </div>
   );

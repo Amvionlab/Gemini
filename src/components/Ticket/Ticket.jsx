@@ -273,7 +273,7 @@ const filteredCustomers = filteredByCid.filter(
 
             <div ref={dropdownRef} className="relative flex items-center mb-3 mr-4">
       <label className="text-sm font-semibold text-prime mr-2 w-32">
-        Location
+        Location <span className="text-red-600 text-md font-bold">*</span>
       </label>
       <div className="relative flex-grow min-w-72 max-w-72">
         <input
@@ -287,6 +287,7 @@ const filteredCustomers = filteredByCid.filter(
           }}
           onFocus={() => setShowDropdown(true)}
           autocomplete="off"
+          required
           className="w-72 text-xs bg-box border p-1.5 px-2 rounded outline-none transition ease-in-out delay-150 focus:border focus:border-flo"
         />
 

@@ -43,7 +43,7 @@ if ($_SERVER['REQUEST_METHOD'] === 'GET') {
     
     $query = "
     SELECT 
-        ticket.id,ticket.status,
+        ticket.id,ticket.status,ticket.fund_raised,
         client.name AS ticket_customer_value,
         CONCAT(customer.gcl_region,'-',customer.node, '-',customer.a_end) AS customer_branch,
         CASE

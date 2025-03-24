@@ -20,6 +20,7 @@ import {
   Select,
   MenuItem,
 } from "@mui/material";
+import { seriesProviderUtils } from "@mui/x-charts/internals";
 
 const App = () => {
   const navigate = useNavigate();
@@ -42,8 +43,9 @@ const App = () => {
   const [selectedBranch, setSelectedBranch] = useState(""); // Store selected branch
   const [search, setSearch] = useState(""); // Search input state
   const [showDropdown, setShowDropdown] = useState(false); // Control dropdown visibility
-
-
+  const [fundAmount, setFundAmount] = useState("");
+  const [reqfund, setreqFund] = useState("");
+  console.log("reqfund", reqfund);
   const uniqueBranches = [...new Set(tickets.map((ticket) => ticket.customer_branch))];
   useEffect(() => {
     const fetchInitialData = async () => {
@@ -68,6 +70,7 @@ const App = () => {
       }
     }
   }, [ticketTypes]);
+  
 
   const fetchTickets = async (value) => {
     try {
@@ -108,6 +111,25 @@ const App = () => {
     }
   };
 
+  const fetchUpdatedFund = async (ticketId) => {
+    console.log("Fetching fund amount for ticket ID:", ticketId); // Debugging
+
+    try {
+        const response = await fetch(`${baseURL}backend/getFundAmt.php?ticket_id=${ticketId}`);
+        const data = await response.json();
+
+        console.log("API Response:", data); // Debugging
+
+        if (data.success) {
+            setFundAmount(data.fund_raised); // Update state
+        } else {
+            console.error("Error fetching fund amount:", data.error);
+        }
+    } catch (error) {
+        console.error("Network error fetching fund amount:", error);
+    }
+};
+
   const fetchTicketTypes = async () => {
     try {
       const response = await fetch(`${baseURL}backend/fetchTicket_type.php`);
@@ -133,6 +155,7 @@ const App = () => {
     e.dataTransfer.setData("ticketId", ticket.id);
     e.dataTransfer.setData("fromStatus", ticket.status);
     setDraggedItem(ticket);
+    setFundAmount("");
   }, []);
 
   
@@ -151,39 +174,59 @@ const App = () => {
     }, []);
 
     const targetColumnTitle = columns.find((col) => col.id === targetColumnId)?.title;
+    const draggedTicket = tickets.find((t) => t.id === ticketToMove?.ticketId);
 
-  const handleDrop = useCallback((e, columnId) => {
-    e.preventDefault();
-    if (draggedItem) {
-      const fromStatus = e.dataTransfer.getData("fromStatus");
-      if (columnId === "2") {
-        handleViewTicket(draggedItem.id);
-      } else {
-        setTicketToMove({ ticketId: draggedItem.id, fromStatus, columnId });
-        setTargetColumnId(columnId);
-        setIsPopupOpen(true);
-        setDraggedItem(null);
+    console.log("Target Column:", targetColumnTitle);
+    console.log("Ticket being moved:", ticketToMove);
+    console.log("Dragged Ticket:", draggedTicket);
+    
+
+    const handleDrop = useCallback((e, columnId) => {
+      e.preventDefault();
+      if (draggedItem) {
+        const fromStatus = e.dataTransfer.getData("fromStatus");
+    
+        if (columnId === "2") {
+          handleViewTicket(draggedItem.id);
+        } else {
+          setTicketToMove({ ticketId: draggedItem.id, fromStatus, columnId });
+          setTargetColumnId(columnId);
+          setIsPopupOpen(true);
+          setDraggedItem(null);
+          setreqFund();
+          // Reset fund amount for new tickets in Fund Req
+          if (columnId === "Fund Req") {
+            setFundAmount("");
+          }
+        }
       }
-    }
-  }, [draggedItem]);
+    }, [draggedItem]);
+    
 
-  const handleConfirmMove = async () => {
-    if (ticketToMove) {
-      const { ticketId, fromStatus, columnId } = ticketToMove;
-      await updateStatus(ticketId, columnId);
-      await logTicketMovement(ticketId, fromStatus, columnId);
-      setTickets((prevTickets) =>
-        prevTickets.map((ticket) =>
-          ticket.id === ticketId ? { ...ticket, status: columnId } : ticket
-        )
-      );
-    }
-    setIsPopupOpen(false);
-    setTicketToMove(null);
-    setTargetColumnId(null);
-    fetchTickets(activeTypeId);
-  };
-
+    const handleConfirmMove = async () => {
+      if (ticketToMove) {
+        const { ticketId, fromStatus, columnId } = ticketToMove;
+    
+        let updatedFundAmount = columnId === "Fund Req" ? fundAmount * 10 : null;
+    
+        await updateStatus(ticketId, columnId, updatedFundAmount);
+        await logTicketMovement(ticketId, fromStatus, columnId);
+    
+        setTickets((prevTickets) =>
+          prevTickets.map((ticket) =>
+            ticket.id === ticketId
+              ? { ...ticket, status: columnId, fundAmount: updatedFundAmount }
+              : ticket
+          )
+        );
+      }
+    
+      setIsPopupOpen(false);
+      setTicketToMove(null);
+      setTargetColumnId(null);
+      fetchTickets(activeTypeId);
+    };
+  
   const handleCancelMove = () => {
     setIsPopupOpen(false);
     setTicketToMove(null);
@@ -325,6 +368,139 @@ const App = () => {
     ? uniqueBranches.filter((branch) => branch) // Filter out null/undefined branches
     : uniqueBranches.filter((branch) => branch && branch.toLowerCase().includes(search.toLowerCase()));
 
+    const handleFundRequest = async () => {
+      if (!ticketToMove) {
+          console.error("Error: No ticket selected!");
+          toast.error("Error: No ticket selected.");
+          return;
+      }
+  
+      const { ticketId, fromStatus, columnId } = ticketToMove;
+  
+      if (!ticketId) {
+          console.error("Error: Ticket ID is missing!");
+          toast.error("Error: Ticket ID not found.");
+          return;
+      }
+  
+      if (!fundAmount) {
+          toast.warn("Please enter a valid fund amount.");
+          return;
+      }
+  
+      const todayDate = new Date().toISOString().split("T")[0]; // Get current date (YYYY-MM-DD)
+  
+      const requestData = {
+          ticket_id: ticketId,
+          fund_amount: fundAmount * 10, // Multiply by 10 before sending
+          move_date: todayDate, // Use today's date
+          done_by: user?.name || "System",
+      };
+  
+      try {
+          const response = await fetch(`${baseURL}Backend/updatefundamt.php`, {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify(requestData),
+          });
+  
+          const text = await response.text();
+          try {
+              const result = JSON.parse(text);
+              if (result.success) {
+                  toast.success("Fund amount updated successfully.");
+                  await updateStatus(ticketId, columnId);
+                  await logTicketMovement(ticketId, fromStatus, columnId);
+                  setTickets((prevTickets) =>
+                      prevTickets.map((ticket) =>
+                          ticket.id === ticketId
+                              ? { ...ticket, status: columnId, fundAmount: requestData.fund_amount }
+                              : ticket
+                      )
+                  );
+                  fetchTickets(activeTypeId);
+              } else {
+                  toast.error(`Error: ${result.error}`);
+              }
+          } catch (jsonError) {
+              console.error("Invalid JSON response:", text);
+              toast.error("Error: Invalid server response. Check console.");
+          }
+      } catch (error) {
+          console.error("Error updating fund amount:", error);
+          toast.error("Error updating fund amount. Try again.");
+      }
+      setFundAmount("");
+      setIsPopupOpen(false);
+      setTicketToMove(null);
+      setTargetColumnId(null);
+  };
+  
+  const handleApprovedAmount = async () => {
+    if (!ticketToMove) {
+        console.error("Error: No ticket selected!");
+        toast.error("Error: No ticket selected.");
+        return;
+    }
+
+    const { ticketId } = ticketToMove;
+
+    if (!ticketId) {
+        console.error("Error: Ticket ID is missing!");
+        toast.error("Error: Ticket ID not found.");
+        return;
+    }
+
+    if (!fundAmount) {
+        toast.warn("Please enter a valid fund amount.");
+        return;
+    }
+
+    const requestData = {
+        ticket_id: ticketId,
+        fund_amount: fundAmount, // Use the updated fund amount
+        done_by: user?.name || "System",
+    };
+
+    try {
+        const response = await fetch(`${baseURL}Backend/updateapprovedamt.php`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestData),
+        });
+
+        const text = await response.text();
+        try {
+            const result = JSON.parse(text);
+            if (result.success) {
+                toast.success("Approved fund amount updated successfully.");
+
+                // Update fund_approved in UI without changing other fields
+                setTickets((prevTickets) =>
+                    prevTickets.map((ticket) =>
+                        ticket.id === ticketId
+                            ? { ...ticket, fund_approved: requestData.fund_amount }
+                            : ticket
+                    )
+                );
+
+                fetchTickets(activeTypeId); // Refresh tickets
+            } else {
+                toast.error(`Error: ${result.error}`);
+            }
+        } catch (jsonError) {
+            console.error("Invalid JSON response:", text);
+            toast.error("Error: Invalid server response. Check console.");
+        }
+    } catch (error) {
+        console.error("Error updating approved fund amount:", error);
+        toast.error("Error updating approved fund amount. Try again.");
+    }
+
+    setIsPopupOpen(false);
+    setTicketToMove(null);
+    setTargetColumnId(null);
+};
 
 
   return (
@@ -387,7 +563,6 @@ const App = () => {
           
           <div className="ml-4">
 
-
             {ticketTypes.map((type) => (
               <Button
                 key={type.id}
@@ -412,7 +587,7 @@ const App = () => {
           className="flex overflow-x-auto whitespace-nowrap p-0 h-full overflow-y-auto"
         >
           {/* Ticket Columns */}
-          <div className="flex-grow max-h-full flex items-start relative">
+      <div className="flex-grow max-h-full flex items-start relative">
         {columns.map((column) => (
           <div
             key={column.id}
@@ -423,6 +598,7 @@ const App = () => {
           >
             <h2 className="mb-2 text-prime text-center text-xl font-semibold uppercase">
               {column.title}
+              
             </h2>
             <div className="column-content mb-2">
               {tickets
@@ -431,6 +607,7 @@ const App = () => {
                 .map((ticket) => (
                   <div
                     key={ticket.id}
+                    
                     className={
                       ticket.color === "3"
                         ? "draggable shadow-sm shadow-red-700 hover:shadow-md mb-4 hover:shadow-red-700 text-[red]"
@@ -451,12 +628,14 @@ const App = () => {
                       <div className="flex-1">
                         <p
                           className="font-semibold text-prime font-poppins truncate"
-                          title={ticket.ticket_customer_value}
-                        >
+                          
+                        >   
                           {ticket.ticket_customer_value}
+                          
                         </p>
                         <p className="truncate" title={ticket.customer_branch}>
                           {ticket.customer_branch}
+                         
                         </p>
                       </div>
                       <div className="rounded-md pr-1 w-6 h-6 min-w-6 flex items-center justify-center">
@@ -490,62 +669,127 @@ const App = () => {
         <Dialog open={isPopupOpen} onClose={handleCancelMove} aria-labelledby="alert-dialog-title">
           <DialogTitle id="alert-dialog-title">{"Confirm Move"}</DialogTitle>
           <DialogContent>
-            <DialogContentText>
-              {`Do you want to move to ${targetColumnTitle}?`}
-              <br />
-              <br />
-            </DialogContentText>
+  <DialogContentText>
+    {`Do you want to move to ${targetColumnTitle}?`}
+    <br />
+    <br />
+  </DialogContentText>
 
-            {/* Date Picker */}
-            <TextField
-              label="Select Date"
-              type="datetime-local"
-              fullWidth
-              margin="dense"
-              InputLabelProps={{ shrink: true }}
-              value={selectedDate}
-              onChange={(e) => setSelectedDate(e.target.value)}
-            />
+  {/* Only show date picker if NOT moving to Fund Req */}
+  {targetColumnTitle !== "Fund Req" && (
+    <TextField
+      label="Select Date"
+      type="datetime-local"
+      fullWidth
+      margin="dense"
+      InputLabelProps={{ shrink: true }}
+      value={selectedDate}
+      onChange={(e) => setSelectedDate(e.target.value)}
+    />
+  )}
 
-            {/* RCA Dropdown - Only if moving to Closed */}
-            {targetColumnTitle === "Closed" && (
-              <FormControl fullWidth margin="dense">
-                <InputLabel>Select RCA</InputLabel>
-                <Select value={selectedRCA} onChange={(e) => setSelectedRCA(e.target.value)}>
-                  {rcaList.map((rca) => (
-                    <MenuItem key={rca.id} value={rca.id}>
-                      {rca.name}
-                    </MenuItem>
-                  ))}
-                </Select>
-              </FormControl>
-            )}
-            {targetColumnTitle === "Closed" && (
-              <TextField
-              label="Docket No :"
-              type="text-local"
-              fullWidth
-              margin="dense"
-              InputLabelProps={{ shrink: true }}
-              onChange={(e) => setDocket(e.target.value)}
-            />
-            )}
-          </DialogContent>
+  {/* RCA & Docket for Closed */}
+  {targetColumnTitle === "Closed" && (
+    <>
+      <FormControl fullWidth margin="dense">
+        <InputLabel>Select RCA</InputLabel>
+        <Select value={selectedRCA} onChange={(e) => setSelectedRCA(e.target.value)}>
+          {rcaList.map((rca) => (
+            <MenuItem key={rca.id} value={rca.id}>
+              {rca.name}
+            </MenuItem>
+          ))}
+        </Select>
+      </FormControl>
 
-          <DialogActions>
-          <Button
-    onClick={
-        targetColumnTitle === "Closed" ? handleConfirm : handleConfirmMove
-    }
+      <TextField
+        label="Docket No :"
+        type="text"
+        fullWidth
+        margin="dense"
+        InputLabelProps={{ shrink: true }}
+        onChange={(e) => setDocket(e.target.value)}
+      />
+    </>
+  )}
+
+  {/* Fund Req Input */}
+  {targetColumnTitle === "Fund Req" && (
+  <div className="flex items-center gap-2 mt-4 w-60"> 
+    {/* Enter Amount */}
+    <TextField
+      label="Enter Amount"
+      type="number"
+      variant="outlined"
+      value={fundAmount}
+      onChange={(e) => setFundAmount(e.target.value)}
+      InputLabelProps={{ shrink: true }}
+    />
+
+    <span className="text-xl font-bold">=</span>
+
+    {/* Total Amount */}
+    <TextField
+      label="Total"
+      type="number"
+      variant="outlined"
+      value={fundAmount ? fundAmount * 10 : ""}
+      InputProps={{ readOnly: true }}
+      InputLabelProps={{ shrink: true }}
+    />
+  </div>
+)}
+
+{targetColumnTitle === "Approved" && draggedTicket && (
+  <div className="flex items-center gap-2 mt-4 w-60">
+    <TextField
+      label="Fund Requested"
+      type="number"
+      variant="outlined"
+      value={draggedTicket.fund_raised || ""}
+      disabled
+      InputLabelProps={{ shrink: true }}
+    />
+    <TextField
+      label="Approved Amount"
+      type="number"
+      variant="outlined"
+      onChange={(e) => setFundAmount(e.target.value)}
+      InputLabelProps={{ shrink: true }}
+    />
+    <button onClick={() => fetchUpdatedFund(draggedTicket.id)}></button>
+  </div>
+)}
+
+ 
+</DialogContent>
+
+<DialogActions>
+  <Button
+    onClick={() => {
+      if (targetColumnTitle === "Closed") {
+        handleConfirm();
+      } else if (targetColumnTitle === "Fund Req") {
+        handleFundRequest();
+      } else if (targetColumnTitle === "Approved") {
+        handleConfirmMove(); // Save changes when moving to Approved
+        handleApprovedAmount(); // Post updated fund amount
+      } else {
+        handleConfirmMove();
+      }
+    }}
     disabled={
-        targetColumnTitle === "Closed" && !selectedRCA
+      (targetColumnTitle === "Closed" && !selectedRCA) ||
+      (targetColumnTitle === "Fund Req" && !fundAmount)
     }
     autoFocus
->
+  >
     Yes
-</Button>
-            <Button onClick={handleCancelMove}>No</Button>
-          </DialogActions>
+  </Button>
+  <Button onClick={handleCancelMove}>No</Button>
+</DialogActions>
+
+
         </Dialog>
       )}
     </div>

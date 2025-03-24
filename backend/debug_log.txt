@@ -1,0 +1,14 @@
+Array
+(
+    [vendor] => naveen
+    [vendorid] => 654
+    [gst] => 
+    [contact] => 
+    [email] => 
+    [mobile] => 8877665541
+    [location] => 7654321234
+    [address] => Dr ranga road
+    [state] => TamilNadu
+    [country] => 
+    [attachment] => null
+)
