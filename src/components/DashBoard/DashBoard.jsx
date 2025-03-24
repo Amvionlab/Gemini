@@ -718,7 +718,7 @@ const App = () => {
   <div className="flex items-center gap-2 mt-4 w-60"> 
     {/* Enter Amount */}
     <TextField
-      label="Enter Amount"
+      label="Enter Km"
       type="number"
       variant="outlined"
       value={fundAmount}
@@ -730,7 +730,7 @@ const App = () => {
 
     {/* Total Amount */}
     <TextField
-      label="Total"
+      label="Amount"
       type="number"
       variant="outlined"
       value={fundAmount ? fundAmount * 10 : ""}
@@ -743,7 +743,7 @@ const App = () => {
 {targetColumnTitle === "Approved" && draggedTicket && (
   <div className="flex items-center gap-2 mt-4 w-60">
     <TextField
-      label="Fund Requested"
+      label="Requested Amt"
       type="number"
       variant="outlined"
       value={draggedTicket.fund_raised || ""}
@@ -751,7 +751,7 @@ const App = () => {
       InputLabelProps={{ shrink: true }}
     />
     <TextField
-      label="Approved Amount"
+      label="Approved Amt"
       type="number"
       variant="outlined"
       onChange={(e) => setFundAmount(e.target.value)}
