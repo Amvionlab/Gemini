@@ -21,6 +21,8 @@ if (isset($_GET['ids'])) {
             SELECT 
                 ticket.id,
                 ticket.docket_no,
+                ticket.fund_raised,
+                ticket.fund_approved,
                 client.name AS customer,
                 ticket_type.type AS type,
                 ticket_status.status AS status,
@@ -88,11 +90,19 @@ if (isset($_GET['ids'])) {
                 customer.state_city,
                 customer.email,
                 customer.sla AS customer_sla,
-                customer.service_provider
+                customer.service_provider,
+                vendor.name AS engineer,
+                vendor.state AS engineer_ac,
+                vendor.address AS engineer_bank,
+                vendor.location AS engineer_ifsc,
+                vendor.mobile AS engineer_mobile,
+                vendor.vendor_id AS engineer_id
             FROM 
                 ticket
             JOIN
                 customer ON ticket.customer_location = customer.id
+            LEFT JOIN
+                vendor ON ticket.vendor_id = vendor.id    
             LEFT JOIN 
                 ticket_type ON ticket.ticket_type = ticket_type.id
             LEFT JOIN 
@@ -123,13 +133,12 @@ if (isset($_GET['ids'])) {
                 ticket.id IN ($idsPlaceholder)
             GROUP BY 
                 ticket.id
-            ORDER BY 
-                ticket.id DESC";
+            ";
 
         $result = $conn->query($sqlTickets);
         if ($result->num_rows > 0) {
             $output = fopen('php://output', 'w');
-            fputcsv($output, ['Ticket ID', 'Customer', 'Type', 'Status', 'Nature of Call', 'Service', 'Domain', 'Subdomain', 'RCA', 'Docket No', 'Assignees', 'Created By', 'Created On', 'Closed On', 'Time Taken', 'Unique Code', 'Region', 'Branch Code', 'A End', 'B End', 'Shifting Address', 'Node', 'Modem Type', 'Router IP', 'Primary Link', 'WAN IP', 'Circuit ID', 'Bandwidth', 'Location Type', 'Address', 'Contact Person', 'Mobile', 'Commissioned Date', 'State/City', 'Email', 'Customer SLA', 'Service Provider', 'Timesheet', 'Logs']);
+            fputcsv($output, ['Ticket ID', 'Customer', 'Type', 'Status', 'Nature of Call', 'Service', 'Domain', 'Subdomain', 'Assignees', 'Created By', 'Created On', 'Closed On', 'Time Taken', 'Unique Code', 'Region', 'Branch Code', 'A End', 'B End', 'Shifting Address', 'Node', 'Modem Type', 'Router IP', 'Primary Link', 'WAN IP', 'Circuit ID', 'Bandwidth', 'Location Type', 'Address', 'Contact Person', 'Mobile', 'Commissioned Date', 'State/City', 'Email', 'Customer SLA', 'Service Provider', 'Timesheet', 'Logs', 'RCA', 'Docket No', 'Fund Requested', 'Fund Approved', 'Fund Status', 'Engineer Name', 'Engineer ID', 'Bank Name', 'IFSC', 'Account No', 'Engineer Mobile No']);
 
             // Write each row as CSV
             while ($row = $result->fetch_assoc()) {
@@ -184,7 +193,7 @@ if (isset($_GET['ids'])) {
                 $csvRow = [
                     $row['id'], $row['customer'], $row['type'], $row['status'], 
                     $row['nature_of_call'], $row['service'], $row['domain'], 
-                    $row['subdomain'], $row['rca'], $row['docket_no'], $row['assignees'], $row['name'], 
+                    $row['subdomain'], $row['assignees'], $row['name'], 
                     $row['opened_by'], $row['closed_date'], $row['time_taken'], 
                     $row['gcl_unique_code'], $row['gcl_region'], 
                     $row['branch_code'], $row['a_end'], $row['b_end'], $row['shifting_address'], 
@@ -197,7 +206,7 @@ if (isset($_GET['ids'])) {
                     $row['state_city'], $row['email'], 
                     $row['customer_sla'], $row['service_provider'],
                     $timesheetStr,
-                    $logsStr
+                    $logsStr, $row['rca'], $row['docket_no'], $row['fund_raised'], $row['fund_approved'], $row['status'], $row['engineer'], $row['engineer_id'], $row['engineer_bank'], $row['engineer_ifsc'], $row['engineer_ac'], $row['engineer_mobile']
                 ];
 
                 // Write ticket data to the CSV
