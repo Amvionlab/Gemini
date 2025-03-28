@@ -209,17 +209,23 @@ const handleAmountChange = (value) => {
         if (columnId === "2") {
           handleViewTicket(draggedItem.id);
         } else {
-          setTicketToMove({ ticketId: draggedItem.id, fromStatus, columnId });
-          setTargetColumnId(columnId);
-          setIsPopupOpen(true);
-          setDraggedItem(null);
-          // Reset fund amount for new tickets in Fund Req
-          if (columnId === "Fund Req") {
-            setFundAmount("");
-            setreqFund("");
-            setAmount("");
+          if ((["1", "2", "5"].includes(user.accessId)) && ((["6", "7", "8"].includes(fromStatus)) || (["6", "7", "8"].includes(columnId)) )) {
+            toast.error("Access Denied");
+          } else {
+            setTicketToMove({ ticketId: draggedItem.id, fromStatus, columnId });
+            setTargetColumnId(columnId);
+            setIsPopupOpen(true);
+            setDraggedItem(null);
+            setreqFund();
+            // Reset fund amount for new tickets in Fund Req
+            if (columnId === "Fund Req") {
+              setFundAmount("");
+              setreqFund("");
+              setAmount("");
+            }
           }
         }
+        
       }
     }, [draggedItem]);
     
