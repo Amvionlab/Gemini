@@ -45,6 +45,7 @@ const App = () => {
   const [showDropdown, setShowDropdown] = useState(false); // Control dropdown visibility
   const [fundAmount, setFundAmount] = useState("");
   const [reqfund, setreqFund] = useState("");
+  const [amount, setAmount] = useState("");
   console.log("reqfund", reqfund);
   const uniqueBranches = [...new Set(tickets.map((ticket) => ticket.customer_branch))];
   useEffect(() => {
@@ -70,7 +71,26 @@ const App = () => {
       }
     }
   }, [ticketTypes]);
-  
+
+  // Handle KM Change
+const handleKmChange = (value) => {
+  setFundAmount(value);
+  if (value !== "") {
+    setAmount(value * 3);
+  } else {
+    setAmount("");
+  }
+};
+
+// Handle Amount Change
+const handleAmountChange = (value) => {
+  setAmount(value);
+  if (value !== "") {
+    setFundAmount(value / 3);
+  } else {
+    setFundAmount("");
+  }
+}; 
 
   const fetchTickets = async (value) => {
     try {
@@ -193,10 +213,11 @@ const App = () => {
           setTargetColumnId(columnId);
           setIsPopupOpen(true);
           setDraggedItem(null);
-          setreqFund();
           // Reset fund amount for new tickets in Fund Req
           if (columnId === "Fund Req") {
             setFundAmount("");
+            setreqFund("");
+            setAmount("");
           }
         }
       }
@@ -207,7 +228,7 @@ const App = () => {
       if (ticketToMove) {
         const { ticketId, fromStatus, columnId } = ticketToMove;
     
-        let updatedFundAmount = columnId === "Fund Req" ? fundAmount * 10 : null;
+        let updatedFundAmount = columnId === "Fund Req" ? fundAmount * 3 : null;
     
         await updateStatus(ticketId, columnId, updatedFundAmount);
         await logTicketMovement(ticketId, fromStatus, columnId);
@@ -392,7 +413,7 @@ const App = () => {
   
       const requestData = {
           ticket_id: ticketId,
-          fund_amount: fundAmount * 10, // Multiply by 10 before sending
+          fund_amount: fundAmount * 3, // Multiply by 3 before sending
           move_date: todayDate, // Use today's date
           done_by: user?.name || "System",
       };
@@ -434,6 +455,8 @@ const App = () => {
       setIsPopupOpen(false);
       setTicketToMove(null);
       setTargetColumnId(null);
+      setreqFund("");
+      setAmount("");
   };
   
   const handleApprovedAmount = async () => {
@@ -713,16 +736,16 @@ const App = () => {
     </>
   )}
 
-  {/* Fund Req Input */}
-  {targetColumnTitle === "Fund Req" && (
-  <div className="flex items-center gap-2 mt-4 w-60"> 
-    {/* Enter Amount */}
+ {/* Fund Req Input */}
+{targetColumnTitle === "Fund Req" && (
+  <div className="flex items-center gap-2 mt-4 w-60">
+    {/* Enter Km */}
     <TextField
       label="Enter Km"
       type="number"
       variant="outlined"
       value={fundAmount}
-      onChange={(e) => setFundAmount(e.target.value)}
+      onChange={(e) => handleKmChange(e.target.value)}
       InputLabelProps={{ shrink: true }}
     />
 
@@ -733,8 +756,8 @@ const App = () => {
       label="Amount"
       type="number"
       variant="outlined"
-      value={fundAmount ? fundAmount * 10 : ""}
-      InputProps={{ readOnly: true }}
+      value={amount}
+      onChange={(e) => handleAmountChange(e.target.value)}
       InputLabelProps={{ shrink: true }}
     />
   </div>

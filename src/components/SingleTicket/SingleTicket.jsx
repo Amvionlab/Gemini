@@ -94,7 +94,8 @@ const SingleTicket = () => {
   const [availableVendors, setAvailableVendors] = useState([]);
   const [fundAmount, setFundAmount] = useState("");
   const [ReqAmount, setReqAmount] = useState("");
-   const [tickets, setTickets] = useState([]);
+  const [tickets, setTickets] = useState([]);
+  const [totalAmount, setTotalAmount] = useState("");
    
 // Add missing functions
 const handleVendorModalClose = () => setIsVendorModalOpen(false);
@@ -363,6 +364,25 @@ useEffect(() => {
     }
   };
 
+  // Handle Amount Change
+const handleAmountChange = (value) => {
+  setFundAmount(value);
+  if (value !== "") {
+    setTotalAmount(value * 3);
+  } else {
+    setTotalAmount("");
+  }
+};
+
+// Handle Total Change
+const handleTotalChange = (value) => {
+  setTotalAmount(value);
+  if (value !== "") {
+    setFundAmount(value / 3);
+  } else {
+    setFundAmount("");
+  }
+};
 
   const handleFilterChange = (e, field, type) => {
     const value = e.target.value.toLowerCase();
@@ -1198,7 +1218,7 @@ useEffect(() => {
     try {
       const params = new URLSearchParams({
         ticket_id: ticketId,
-        fund_amount: Number(fundAmount) * 10,
+        fund_amount: Number(fundAmount) * 3,
         done_by: user?.name || "System",
         move_date: todayDate, // Use today's date
       });
@@ -2191,32 +2211,34 @@ useEffect(() => {
 
     {/* 👉 Fund Req Section */}
     {status[selectedStep]?.subName === "Fund Req" && (
-        <div className="flex items-center gap-2 mt-4 w-60">
-            <TextField
-                label="Enter Amount"
-                type="number"
-                variant="outlined"
-                value={fundAmount}
-                onChange={(e) => setFundAmount(Number(e.target.value))}
-                InputLabelProps={{ shrink: true }}
-                fullWidth
-                margin="dense"
-            />
+  <div className="flex items-center gap-2 mt-4 w-60">
+    {/* Enter Amount */}
+    <TextField
+      label="Enter Amount"
+      type="number"
+      variant="outlined"
+      value={fundAmount}
+      onChange={(e) => handleAmountChange(e.target.value)}
+      InputLabelProps={{ shrink: true }}
+      fullWidth
+      margin="dense"
+    />
 
-            <span className="text-xl font-bold">=</span>
+    <span className="text-xl font-bold">=</span>
 
-            <TextField
-                label="Total"
-                type="number"
-                variant="outlined"
-                value={fundAmount ? fundAmount * 10 : ""}
-                InputProps={{ readOnly: true }}
-                InputLabelProps={{ shrink: true }}
-                fullWidth
-                margin="dense"
-            />
-        </div>
-    )}
+    {/* Total */}
+    <TextField
+      label="Total"
+      type="number"
+      variant="outlined"
+      value={totalAmount}
+      onChange={(e) => handleTotalChange(e.target.value)}
+      InputLabelProps={{ shrink: true }}
+      fullWidth
+      margin="dense"
+    />
+  </div>
+)}
 
 {status[selectedStep]?.subName === "Approved" && (
   <div className="flex flex-col gap-2 mt-4 w-60">
