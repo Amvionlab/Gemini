@@ -209,7 +209,7 @@ const handleAmountChange = (value) => {
         if (columnId === "2") {
           handleViewTicket(draggedItem.id);
         } else {
-          if ((["1", "2", "5"].includes(user.accessId)) && ((["6", "7", "8"].includes(fromStatus)) || (["6", "7", "8"].includes(columnId)) )) {
+          if (((["1", "2", "5"].includes(user.accessId)) && ((["6", "7", "8"].includes(fromStatus)) || (["6", "7", "8"].includes(columnId)) )) || ((["4"].includes(user.accessId)) && ((["7", "8"].includes(fromStatus)) || (["7", "8"].includes(columnId)) )) ) {
             toast.error("Access Denied");
           } else {
             setTicketToMove({ ticketId: draggedItem.id, fromStatus, columnId });
@@ -217,6 +217,8 @@ const handleAmountChange = (value) => {
             setIsPopupOpen(true);
             setDraggedItem(null);
             setreqFund();
+            setFundAmount();
+            setAmount();
             // Reset fund amount for new tickets in Fund Req
             if (columnId === "Fund Req") {
               setFundAmount("");
@@ -425,7 +427,8 @@ const handleAmountChange = (value) => {
       };
   
       try {
-          const response = await fetch(`${baseURL}Backend/updatefundamt.php`, {
+        if(fundAmount > 0){
+         const response = await fetch(`${baseURL}Backend/updatefundamt.php`, {
               method: "POST",
               headers: { "Content-Type": "application/json" },
               body: JSON.stringify(requestData),
@@ -453,7 +456,10 @@ const handleAmountChange = (value) => {
               console.error("Invalid JSON response:", text);
               toast.error("Error: Invalid server response. Check console.");
           }
-      } catch (error) {
+      } else{
+            toast.error("Please enter a valid amount");
+          }
+        }catch (error) {
           console.error("Error updating fund amount:", error);
           toast.error("Error updating fund amount. Try again.");
       }
@@ -751,6 +757,7 @@ const handleAmountChange = (value) => {
       type="number"
       variant="outlined"
       value={fundAmount}
+      inputProps={{ min: 0 }}
       onChange={(e) => handleKmChange(e.target.value)}
       InputLabelProps={{ shrink: true }}
     />
@@ -763,6 +770,7 @@ const handleAmountChange = (value) => {
       type="number"
       variant="outlined"
       value={amount}
+      inputProps={{ min: 0 }}
       onChange={(e) => handleAmountChange(e.target.value)}
       InputLabelProps={{ shrink: true }}
     />

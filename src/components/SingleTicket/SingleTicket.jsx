@@ -1005,21 +1005,23 @@ const handleTotalChange = (value) => {
 
   const handleStepClick = async (index) => {
     setSelectedStep(index);
-    
     const clickedStatus = status[index]?.subName;
-  
+     if (((["1", "2", "5"].includes(user.accessId)) && ((["6", "7", "8"].includes(ticketData?.status)) || ([5, 6, 7].includes(index)) )) || ((["4"].includes(user.accessId)) && ((["7", "8"].includes(ticketData?.status)) || ([6, 7].includes(index)) )) ){
+                toast.error("Access Denied");
+              } else {  
     if (clickedStatus === "Approved") {
       try {
         const fundAmountFromDb = await fetchFundAmount(ticketId);
         if (fundAmountFromDb) {
-          setFundAmount(fundAmountFromDb);  // ✅ Set the fund amount
+          setFundAmount(fundAmountFromDb);  
         }
       } catch (error) {
         console.error("Failed to fetch fund amount:", error);
       }
     }
   
-    setOpen(true); // Open the dialog
+    setOpen(true); 
+  }
   };
   
   
@@ -1048,6 +1050,7 @@ const handleTotalChange = (value) => {
     console.log(newStatus);
     const oldStatus = ticketData?.status;
     console.log(oldStatus);
+    
     if (oldStatus != 2) {
       try {
         // Update ticket status
@@ -1091,6 +1094,7 @@ const handleTotalChange = (value) => {
         toast.warning("Please select an RCA before closing the ticket.");
         return;
     }
+   
 
     try {
         // ✅ Step 1: Update Ticket Status
@@ -1223,6 +1227,8 @@ const handleTotalChange = (value) => {
         move_date: todayDate, // Use today's date
       });
       console.log("Sending params:", params.toString());
+      if(fundAmount > 0)
+      {
       const response = await fetch(`${baseURL}backend/updatefundamtsingleticket.php`, {
         method: "POST",
         headers: { "Content-Type": "application/x-www-form-urlencoded" },
@@ -1236,7 +1242,11 @@ const handleTotalChange = (value) => {
         console.error("Failed to submit fund request");
         return false;
       }
-    } catch (error) {
+    }
+    else{
+      toast.error("Please enter a valid amount");
+    }
+   } catch (error) {
       console.error("Error submitting fund request:", error);
       return false;
     }
@@ -2214,15 +2224,17 @@ const handleTotalChange = (value) => {
   <div className="flex items-center gap-2 mt-4 w-60">
     {/* Enter Amount */}
     <TextField
-      label="Enter Amount"
-      type="number"
-      variant="outlined"
-      value={fundAmount}
-      onChange={(e) => handleAmountChange(e.target.value)}
-      InputLabelProps={{ shrink: true }}
-      fullWidth
-      margin="dense"
-    />
+  label="Enter Amount"
+  type="number"
+  variant="outlined"
+  value={fundAmount}
+  onChange={(e) => handleAmountChange(e.target.value)}
+  InputLabelProps={{ shrink: true }}
+  inputProps={{ min: 0 }}
+  fullWidth
+  margin="dense"
+/>
+
 
     <span className="text-xl font-bold">=</span>
 
@@ -2234,6 +2246,7 @@ const handleTotalChange = (value) => {
       value={totalAmount}
       onChange={(e) => handleTotalChange(e.target.value)}
       InputLabelProps={{ shrink: true }}
+      inputProps={{ min: 0 }}
       fullWidth
       margin="dense"
     />
