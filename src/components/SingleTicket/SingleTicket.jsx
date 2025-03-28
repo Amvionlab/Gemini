@@ -985,21 +985,23 @@ useEffect(() => {
 
   const handleStepClick = async (index) => {
     setSelectedStep(index);
-    
     const clickedStatus = status[index]?.subName;
-  
+     if ((["1", "2", "5"].includes(user.accessId)) && ((["6", "7", "8"].includes(ticketData?.status)) || ([5, 6, 7].includes(index)) )) {
+                toast.error("Access Denied");
+              } else {  
     if (clickedStatus === "Approved") {
       try {
         const fundAmountFromDb = await fetchFundAmount(ticketId);
         if (fundAmountFromDb) {
-          setFundAmount(fundAmountFromDb);  // ✅ Set the fund amount
+          setFundAmount(fundAmountFromDb);  
         }
       } catch (error) {
         console.error("Failed to fetch fund amount:", error);
       }
     }
   
-    setOpen(true); // Open the dialog
+    setOpen(true); 
+  }
   };
   
   
@@ -1028,6 +1030,7 @@ useEffect(() => {
     console.log(newStatus);
     const oldStatus = ticketData?.status;
     console.log(oldStatus);
+    
     if (oldStatus != 2) {
       try {
         // Update ticket status
@@ -1071,6 +1074,7 @@ useEffect(() => {
         toast.warning("Please select an RCA before closing the ticket.");
         return;
     }
+   
 
     try {
         // ✅ Step 1: Update Ticket Status
