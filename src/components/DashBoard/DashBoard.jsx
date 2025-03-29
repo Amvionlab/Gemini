@@ -44,6 +44,7 @@ const App = () => {
   const [search, setSearch] = useState(""); // Search input state
   const [showDropdown, setShowDropdown] = useState(false); // Control dropdown visibility
   const [fundAmount, setFundAmount] = useState("");
+  const [vendorid, setVendorid] = useState("");
   const [reqfund, setreqFund] = useState("");
   const [amount, setAmount] = useState("");
   console.log("reqfund", reqfund);
@@ -141,7 +142,8 @@ const handleAmountChange = (value) => {
         console.log("API Response:", data); // Debugging
 
         if (data.success) {
-            setFundAmount(data.fund_raised); // Update state
+            setFundAmount(data.fund_raised); 
+            setVendorid(data.vendor_id);
         } else {
             console.error("Error fetching fund amount:", data.error);
         }
@@ -176,6 +178,7 @@ const handleAmountChange = (value) => {
     e.dataTransfer.setData("fromStatus", ticket.status);
     setDraggedItem(ticket);
     setFundAmount("");
+    fetchUpdatedFund(ticket.id);
   }, []);
 
   
@@ -203,6 +206,7 @@ const handleAmountChange = (value) => {
 
     const handleDrop = useCallback((e, columnId) => {
       e.preventDefault();
+      fetchUpdatedFund(draggedItem.id);
       if (draggedItem) {
         const fromStatus = e.dataTransfer.getData("fromStatus");
     
@@ -211,7 +215,12 @@ const handleAmountChange = (value) => {
         } else {
           if (((["1", "2", "5"].includes(user.accessId)) && ((["6", "7", "8"].includes(fromStatus)) || (["6", "7", "8"].includes(columnId)) )) || ((["4"].includes(user.accessId)) && ((["7", "8"].includes(fromStatus)) || (["7", "8"].includes(columnId)) )) ) {
             toast.error("Access Denied");
-          } else {
+          }
+          else if (vendorid == '' && columnId === "6") {
+            toast.error("Engineer Not Yet Assigned");
+        }
+        
+          else {
             setTicketToMove({ ticketId: draggedItem.id, fromStatus, columnId });
             setTargetColumnId(columnId);
             setIsPopupOpen(true);
@@ -233,6 +242,7 @@ const handleAmountChange = (value) => {
     
 
     const handleConfirmMove = async () => {
+      
       if (ticketToMove) {
         const { ticketId, fromStatus, columnId } = ticketToMove;
     
@@ -254,6 +264,7 @@ const handleAmountChange = (value) => {
       setTicketToMove(null);
       setTargetColumnId(null);
       fetchTickets(activeTypeId);
+    
     };
   
   const handleCancelMove = () => {
@@ -705,7 +716,7 @@ const handleAmountChange = (value) => {
           <DialogTitle id="alert-dialog-title">{"Confirm Move"}</DialogTitle>
           <DialogContent>
   <DialogContentText>
-    {`Do you want to move to ${targetColumnTitle}?`}
+    {`Do you want to move to ${targetColumnTitle}? ${vendorid}`}
     <br />
     <br />
   </DialogContentText>
