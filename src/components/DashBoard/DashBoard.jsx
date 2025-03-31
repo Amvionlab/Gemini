@@ -204,41 +204,47 @@ const handleAmountChange = (value) => {
     console.log("Dragged Ticket:", draggedTicket);
     
 
-    const handleDrop = useCallback((e, columnId) => {
+    const handleDrop = useCallback(async (e, columnId) => {
       e.preventDefault();
-      fetchUpdatedFund(draggedItem.id);
-      if (draggedItem) {
-        const fromStatus = e.dataTransfer.getData("fromStatus");
+      
+      if (!draggedItem) return; // Ensure draggedItem exists
     
-        if (columnId === "2") {
-          handleViewTicket(draggedItem.id);
+        const response = await fetch(`${baseURL}backend/getFundAmt.php?ticket_id=${draggedItem.id}`);
+        const data = await response.json();
+
+      const fromStatus = e.dataTransfer.getData("fromStatus");
+    
+      if (columnId === "2") {
+        handleViewTicket(draggedItem.id);
+      } else {
+        if (
+          (["1", "2", "5"].includes(user.accessId) &&
+            (["6", "7", "8"].includes(fromStatus) || ["6", "7", "8"].includes(columnId))) ||
+          (["4"].includes(user.accessId) &&
+            (["7", "8"].includes(fromStatus) || ["7", "8"].includes(columnId)))
+        ) {
+          toast.error("Access Denied");
+        } else if (!data.vendor_id && columnId == "6") {
+          toast.error("Engineer Not Yet Assigned");
         } else {
-          if (((["1", "2", "5"].includes(user.accessId)) && ((["6", "7", "8"].includes(fromStatus)) || (["6", "7", "8"].includes(columnId)) )) || ((["4"].includes(user.accessId)) && ((["7", "8"].includes(fromStatus)) || (["7", "8"].includes(columnId)) )) ) {
-            toast.error("Access Denied");
-          }
-          else if (vendorid == '' && columnId === "6") {
-            toast.error("Engineer Not Yet Assigned");
-        }
-        
-          else {
-            setTicketToMove({ ticketId: draggedItem.id, fromStatus, columnId });
-            setTargetColumnId(columnId);
-            setIsPopupOpen(true);
-            setDraggedItem(null);
-            setreqFund();
-            setFundAmount();
-            setAmount();
-            // Reset fund amount for new tickets in Fund Req
-            if (columnId === "Fund Req") {
-              setFundAmount("");
-              setreqFund("");
-              setAmount("");
-            }
+          setTicketToMove({ ticketId: draggedItem.id, fromStatus, columnId });
+          setTargetColumnId(columnId);
+          setIsPopupOpen(true);
+          setDraggedItem(null);
+          setreqFund();
+          setFundAmount();
+          setAmount();
+    
+          // Reset fund amount for new tickets in Fund Req
+          if (columnId === "Fund Req") {
+            setFundAmount("");
+            setreqFund("");
+            setAmount("");
           }
         }
-        
       }
     }, [draggedItem]);
+    
     
 
     const handleConfirmMove = async () => {
